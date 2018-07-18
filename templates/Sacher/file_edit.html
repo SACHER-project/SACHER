@@ -1,0 +1,13 @@
+{% extends "Sacher/base.html" %}
+{% block title %}Modifica File - {{ file.filename }}{% endblock %}
+{% block h1title %}Modifica File - {{ file.filename }}{% endblock %}
+{% block content %}
+    <h3>Modifica le informazioni per il file {{ file.filename }}</h3>
+    <form action="" method="post">
+	{% csrf_token %}
+        <table>
+	    {{ form.as_table }}
+        </table>
+	<input type="submit" value="Update">
+    </form>
+{% endblock %}

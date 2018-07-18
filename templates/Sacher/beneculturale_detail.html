@@ -1,0 +1,559 @@
+{% extends "Sacher/base.html" %}
+{% load static %}
+{% block head %}
+    {% if user.is_authenticated %}
+        <link href="{% static 'sacher/css/sidebar.css' %}" rel="stylesheet">
+        <link href="{% static 'sacher/css/beneculturale_detail.css' %}" rel="stylesheet">
+        {#        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>#}
+        <script src="{% static 'sacher/vendor/jquery.form.min.js' %}" async></script>
+
+    {% endif %}
+{% endblock %}
+{% block title %}{{ bc.nome }}{% endblock %}
+{% block h1title %}{{ bc.nome }}{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="operazioni">
+            {% if user.is_authenticated %}
+                {% if sacher_perms >= 4 or user.groups.all.0.name == 'ente' %}
+                    <div class="modifica-elemento">
+                        {#                        <a href="#" onclick="edit_bc()" id="edit_bc">Modifica Bene</a>#}
+                        {#                        <a href="#" id="bc-delete">Elimina</a>#}
+                        {% if elemento.id %}
+{#                            <a href="#" onclick="add_model()" id="add_model">Aggiungi Modello 3D</a>#}
+                        {% endif %}
+                        {#                        <a href="{% url 'sacher:bc_add_elemento' bc.id %}">Aggiungi Elementi</a>#}
+                        {% if not elementi %}
+{#                            <a href="#" onclick="add_elemento()" id="add_elemento">Aggiungi Elemento</a>#}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% if params3dhop.modello3d or params3dhop.children %}
+            {% if user.is_authenticated %}
+                {% include 'Sacher/3dhop_widget.html' with params=params3dhop show_spots="True" group=user.groups.all.0.name %}
+            {% else %}
+                {% include 'Sacher/3dhop_widget.html' with params=params3dhop show_spots="False" group=user.groups.all.0.name %}
+            {% endif %}
+        {% else %}
+            <p style="text-align: center;">Nessun modello 3D.</p>
+        {% endif %}
+
+
+        {% if user.is_authenticated %}
+
+            {% include 'Sacher/elements_double_sidebar.html' with elementi_tree=elementi_tree %}
+            {% include 'Sacher/operation_view.html' %}
+{#            <div id="add_model_dialog" style="display:none;">#}
+{#                <form id="add_model_form" enctype="multipart/form-data" method="post">{% csrf_token %}#}
+{#                    <div class="container">#}
+{#                        <div class="row form-group">#}
+{#                            <label for="elemento-input" class="col-6 col-form-label">Nome Elemento</label>#}
+                            {#                            <div class="col-8">#}
+{#                            <input class="form-control col-6" type="text" id="elemento-input" value="{{ elemento.nome }}" disabled>#}
+                            {#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row form-group">#}
+{#                            <label for="year-input" class="col-6 col-form-label">Anno</label>#}
+                            {#                            <div class="col-10">#}
+{#                            <input class="form-control col-6" type="number" id="year-input" value="2018" min="0" max="2018">#}
+                            {#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row justify-content-between">#}
+{#                            <div class="col-5 custom-file">#}
+{#                                <input type="file" class="custom-file-input" id="nxs_model_file" accept=".nxs">#}
+{#                                <label class="custom-file-label" for="nxs_model_file">Carica .nxs</label>#}
+{#                            </div>#}
+{#                            <div class="col-5 custom-file">#}
+{#                                <input type="file" class="custom-file-input" id="ply_model_file" accept=".ply">#}
+{#                                <label class="custom-file-label" for="ply_model_file">Carica .ply</label>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row justify-content-between">#}
+{#                            <div class="col-5 offset-7 custom-file">#}
+{#                                <input type="file" class="custom-file-input" id="texture_file" accept="image/*">#}
+{#                                <label class="custom-file-label" for="texture_file">Carica texture</label>#}
+{#                            </div><br>#}
+{#                        </div>#}
+{#                        <div class="row progress">#}
+{#                            <div id='progress-bar' class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"#}
+{#                                 style="width: 0%;"></div>#}
+{#                        </div>#}
+{##}
+{#                        <button type="submit">CARICA</button>#}
+{#                        <button type="button" onClick="$('#add_model_dialog').dialog('close');">ESCI</button>#}
+{#                    </div>#}
+{#                </form>#}
+{#            </div>#}
+
+{#            <div id="edit_bc_dialog" style="display:none;">#}
+{#                <form id="edit_bc_form" enctype="multipart/form-data" method="post" action="{% url 'sacher:edit_bc' %}">{% csrf_token %}#}
+{#                    <table width="100%">#}
+{#                        <tr>#}
+{#                            <td>#}
+{#                                <div class="nome_bc">#}
+{#                                    <input type="text" name="nome" id="nome" placeholder="Nome del bene culturale" size="30">#}
+{#                                    <br>#}
+{#                                    <input type="text" name="ICCD" id="ICCD" placeholder="n. ICCD">#}
+                                    {# TODO inserisci pulsante http://www.catalogo.beniculturali.it/sigecSSU_FE/ricercaGuidata.action#}
+{#                                    <br>#}
+{#                                </div>#}
+{#                                <div class="allega">#}
+{#                                    <label for="file-upload" style="color: #95613a;" class="custom-file-upload">#}
+{#                                        <i class="fa fa-cloud-upload" style="color: #95613a;"></i> Allega immagini#}
+{#                                    </label>#}
+{#                                    <input id="file-upload" name="file-upload" type="file" multiple/>#}
+{#                                    <br>#}
+{#                                </div>#}
+{#                                <div class="btn-Save-Exit">#}
+{#                                    <button type="submit">SALVA</button>#}
+{#                                    <button type="button" onClick="edit_bc_dialog.dialog('close');">ESCI</button>#}
+{#                                </div>#}
+{#                            </td>#}
+{#                            <td>#}
+{#                                <div class="well well-sm pre-scrollable" {% comment %}style="max-height:550px;"{% endcomment %}>#}
+{#                                    <samp id="containerLog" class="scroll-pane">#}
+{#                                        <strong style="color: #95613a;">DATI ANAGRAFICI</strong>#}
+{#                                        <br>#}
+{#                                        <label style="color: #95613a;" for="macrocategoria">Macrocategoria:</label>#}
+{#                                        <br>#}
+{#                                        <select id="macrocategoria" name="macrocategoria">#}
+{#                                            <option></option>#}
+{#                                            {% for m in macrocategorie %}#}
+{#                                                <option value="{{ m.id }}">{{ m.nome }}</option>#}
+{#                                            {% endfor %}#}
+{#                                            <option value="">---------</option>#}
+{#                                        </select>#}
+{#                                        <br>#}
+{#                                        <label style="color: #95613a;" for="def_tipologica">Definizione tipologica:</label>#}
+{#                                        <br>#}
+{#                                        <select id="def_tipologica" name="def_tipologica" disabled></select>#}
+{#                                        <br>#}
+{#                                        <label style="color: #95613a;" for="qualificazione">Qualificazione:</label>#}
+{#                                        <br>#}
+{#                                        <select id="qualificazione" name="qualificazione" disabled></select>#}
+{#                                        <br>#}
+{##}
+{#                                        <input type="text" id="localizzazione" name="localizzazione" placeholder="Localizzazione*">#}
+{#                                        <br>#}
+                                        {#                                TODO calendario no, #}
+{#                                        <input type="text" id="datepicker" name="datazione" placeholder="Datazione*">#}
+{#                                        <br>#}
+{#                                        <input type="text" id="autore" name="autore" placeholder="autore/ente collettivo">#}
+{#                                        <br>#}
+{#                                        <input type="text" id="ente" name="ente" placeholder="ente competente">#}
+{#                                        <br>#}
+{#                                        <input id="lat" name="lat" placeholder="Latitudine" required>#}
+{#                                        <br>#}
+{#                                        <input id="lng" name="lng" placeholder="Longitudine" required>#}
+{#                                        <br>#}
+{##}
+{#                                        <input type="text" placeholder="Sito Web" id="sito-web" name="sito-web">#}
+{#                                        <br>#}
+{#                                        <input type="text" placeholder="Email" id="email" name="email">#}
+{#                                        <br>#}
+{#                                        <input type="text" placeholder="Telefono" id="telefono" name="telefono">#}
+{#                                        <br>#}
+{#                                        <textarea id="descrizione" name="descrizione" placeholder="Descrizione" required></textarea>#}
+{#                                        <br>#}
+                                        {#                                TODO Rinonima in "altri codici"#}
+{#                                        <input type="text" placeholder="Altri Codici" id="tag" name="tag">#}
+                                        {#                              TODO  https://www.patrimonioculturale-er.it/webgis/#}
+                                        {# pagina diretta del bene, link da XLS. se non c'è mettiamo pa gina generale di ricerca (http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/ricercabeni)#}
+                                        {#                                http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/dettagliobene195956#}
+                                        {#                                pulsanti verso http://www.cartadelrischio.it/ICR_DATI/cdr/HTML/Metadati/index.asp#}
+{#                                        <br>#}
+{#                                        <div id="bc_images"></div>#}
+{#                                    </samp>#}
+{#                                </div>#}
+{#                            </td>#}
+{#                        </tr>#}
+{#                    </table>#}
+{#                </form>#}
+{#            </div>#}
+
+            <script>
+                var edit_bc_dialog = $('#edit_bc_dialog');
+                var edit_bc_form = $('#edit_bc_form');
+                var imgs_to_remove = [];
+                {#var add_model_dialog = $('#add_model_dialog');#}
+                {#var ply_model_input = $('#ply_model_file');#}
+                {#var texture_input = $('#texture_file');#}
+                {#var nxs_model_input = $('#nxs_model_file');#}
+                {#var progress = $('#progress-bar');#}
+                var bc_delete = $('#bc-delete');
+                var filled = false;
+
+                {#bc_delete.click(function () {#}
+                {#    if (confirm('Vuoi confermale l\'eliminazione del bene culturale "{{ bc.nome }}"?')) {#}
+                {#        data = {#}
+                {#            'bc_id': '{{ bc.id }}',#}
+                {#            'csrfmiddlewaretoken': '{{ csrf_token }}',#}
+                {#        };#}
+                {##}
+                {#        $.ajax({#}
+                {#            url: "{% url 'sacher:bc_delete' %}",#}
+                {#            dataType: 'json',#}
+                {#            method: 'POST',#}
+                {#            data: data,#}
+                {#            success: function (data) {#}
+                {#                console.log(data);#}
+                {#                // Redirect#}
+                {#                window.location.href = data.content;#}
+                {#            }#}
+                {#        });#}
+                {#    }#}
+                {# });#}
+
+                {#function add_model() {#}
+                {#    add_model_dialog.dialog({#}
+                {#        autoOpen: false,#}
+                {#        height: 'auto',#}
+                {#        width: 600,#}
+                {#        modal: true,#}
+                {#        title: "Aggiungi Modello 3d",#}
+                {#        open: function (event, ui) {#}
+                {#            $(add_model_dialog).find('.progress').hide();#}
+                {#            $('.ui-widget-overlay').bind('click', function () {#}
+                {#                add_model_dialog.dialog('close');#}
+                {#            });#}
+                {#        },#}
+                {#        close: function (event, ui) {#}
+                {#        },#}
+                {#    });#}
+                {#    add_model_dialog.dialog('open');#}
+                {# }#}
+
+                {#edit_bc_form.ajaxForm({#}
+                {#    beforeSubmit: function (formData, formObject, formOptions) {#}
+                {#        formData.push(#}
+                {#            {name: 'bc_id', value: "{{ bc.id }}"},#}
+                {#            {name: 'imgs_to_remove', value: imgs_to_remove},#}
+                {#        );#}
+                {#    },#}
+                {#    success: function (data) {#}
+                {#        console.log(data);#}
+                {#        edit_bc_dialog.dialog('close');#}
+                {#        imgs_to_remove = [];#}
+                {#        window.stop();#}
+                {#        window.location.reload(true);#}
+                {#    }#}
+                {# });#}
+                {##}
+                {#function edit_bc() {#}
+                {#    edit_bc_dialog.dialog({#}
+                {#        autoOpen: false,#}
+                {#        height: 500,#}
+                {#        width: 'auto',#}
+                {#        minHeight: 450,#}
+                {#        minWidth: 700,#}
+                {#        modal: true,#}
+                {#        title: "Modifica Bene Culturale",#}
+                {#        open: function (event, ui) {#}
+                {#            $('.ui-widget-overlay').bind('click', function () {#}
+                {#                edit_bc_dialog.dialog('close');#}
+                {#            });#}
+                {#        },#}
+                {#        close: function (event, ui) {#}
+                {#        },#}
+                {#    });#}
+                {##}
+                {#    if (filled === false) {#}
+                {#        fill_edit_bc_form();#}
+                {#        filled = true;#}
+                {#    }#}
+                {#    edit_bc_dialog.dialog('open');#}
+                {# }#}
+                {##}
+                {#function fill_edit_bc_form() {#}
+                {#    $('#nome').val("{{ bc.nome }}");#}
+                {#    $('#ICCD').val("{{ bc.id_iccd|default_if_none:"" }}");#}
+                {#    $('#localizzazione').val("{{ bc.localita|default_if_none:"" }}");#}
+                {#    $('#datepicker').val({{ bc.datazione|default_if_none:"" }});#}
+                {#    $('#autore').val("{{ bc.autore|default_if_none:"" }}");#}
+                {#    $('#ente').val("{{ bc.ente|default_if_none:"" }}");#}
+                {#    $('#lat').val({{ bc.lat }});#}
+                {#    $('#lng').val({{ bc.lon }});#}
+                {#    $('#sito-web').val("{{ bc.sito_web|default_if_none:"" }}");#}
+                {#    $('#email').val("{{ bc.email|default_if_none:"" }}");#}
+                {#    $('#telefono').val({{ bc.phone_number|default_if_none:"" }});#}
+                {#    $('#descrizione').text("{{ bc.descrizione|default_if_none:""|escapejs }}");#}
+                {#    $('#tag').val("{{ bc.tags|default_if_none:""}}");#}
+                    {#$('#').val({{ bc. }});#}
+                {#    var bc_categ = [];#}
+                {##}
+                {#    {% if bc.categoria %}bc_categ.push({{ bc.categoria_id }});{% endif %}#}
+                {#    {% if bc.categoria.sovracategoria %}bc_categ.push({{ bc.categoria.sovracategoria_id }});{% endif %}#}
+                {#    {% if bc.categoria.sovracategoria.sovracategoria %}bc_categ.push({{ bc.categoria.sovracategoria.sovracategoria_id }});{% endif %}#}
+                {##}
+                {#    var i = bc_categ.length - 1;#}
+                {#    if (bc_categ[i]) {#}
+                {#        $('#macrocategoria option[value="' + bc_categ[i] + '"]').attr('selected', 'selected');#}
+                {##}
+                {#        let data = {#}
+                {#            'selected_id': bc_categ[i],#}
+                {#            'desired_category': 'DEF_TIPOLOGICA',#}
+                {#        };#}
+                {#        let select_to_populate = 'def_tipologica';#}
+                {#        categoria_ajax(data, select_to_populate);#}
+                {#        if (bc_categ[i - 1]) {#}
+                {#            $('#def_tipologica option[value="' + bc_categ[i - 1] + '"]').attr('selected', 'selected');#}
+                {##}
+                {#            data = {#}
+                {#                'selected_id': bc_categ[i - 1],#}
+                {#                'desired_category': 'QUALIFICAZIONE',#}
+                {#            };#}
+                {#            select_to_populate = 'qualificazione';#}
+                {#            categoria_ajax(data, select_to_populate);#}
+                {#            if (bc_categ[i - 2]) {#}
+                {#                $('#qualificazione option[value="' + bc_categ[i - 2] + '"]').attr('selected', 'selected');#}
+                {#            }#}
+                {#        }#}
+                {#    }#}
+                {##}
+                {#    var bc_imgs = [];#}
+                {#    {% for img in bc_imgs %}#}
+                {#        bc_imgs.push(["{{ img.img.url }}", "{{ img.id }}"]);#}
+                {#    {% endfor %}#}
+                {##}
+                    {# Cancello le immagini di altri BBCC e aggiungo le immagini del BC corrente #}
+                {#    var bc_images = $('#bc_images');#}
+                {#    bc_images.empty();#}
+                {#    if (bc_imgs.length === 0) {#}
+                {#        bc_images.hide();#}
+                {#    }#}
+                {#    else {#}
+                {#        for (i = 0; i < bc_imgs.length; i++) {#}
+                {#            bc_images.append("<div><img class='img-thumbnail' id='img_" + bc_imgs[i][1] + "' src='" + bc_imgs[i][0] +#}
+                {#                "' height='200' width='200'><div class='delete'><i id='delete_" + bc_imgs[i][1] + "' class='fa fa-remove'></i></div></div>");#}
+                {#        }#}
+                {#        bc_images.show();#}
+                {#    }#}
+                {# }#}
+                {##}
+                {#$('#bc_images').on('click', '.delete', function () {#}
+                {#    // Elimino l'immagine#}
+                {#    var img_id = $(this).children('i').prop('id').replace("delete_", "");#}
+                {#    // Nascondo l'immagine#}
+                {#    $(this).parent().hide();#}
+                {##}
+                {#    // Aggiungo a una lista l'id dell'immagine da rimuovere#}
+                {#    imgs_to_remove.push(parseInt(img_id));#}
+                {# });#}
+                {##}
+                {#$("#lat").spinner({#}
+                {#    min: -90,#}
+                {#    max: 90,#}
+                {#    step: .000001,#}
+                {# });#}
+                {##}
+                {#$("#lng").spinner({#}
+                {#    min: -180,#}
+                {#    max: 180,#}
+                {#    step: .000001,#}
+                {# });#}
+                {##}
+                {#$("#datepicker").datepicker({#}
+                {#    dateFormat: "yy-mm-dd"#}
+                {# });#}
+
+                {#function handleFileSelect(e) {#}
+                {#    let files = e.target.files;#}
+                {#    let filesArr = Array.prototype.slice.call(files);#}
+                {##}
+                {#    $('#selectedFiles').empty();#}
+                {#    filesArr.forEach(function (f) {#}
+                {#        if (!f.type.match("image.*")) {#}
+                {#            return;#}
+                {#        }#}
+                {#        stored_files.push(f);#}
+                {#        let reader = new FileReader();#}
+                {#        reader.onload = function (e) {#}
+                {#            $('#selected_files').append("<div class='sel_file'><img src='" + e.target.result + "' style='width: 50px;'>" + f.name + "</div>");#}
+                {#        };#}
+                {#        reader.readAsDataURL(f);#}
+                {#    });#}
+                {# }#}
+                {##}
+                {#function removeFile(e) {#}
+                {#    let file = $(this).data("files");#}
+                {#    for (let i = 0; i < stored_files.length; i++) {#}
+                {#        if (stored_files[i].name === file) {#}
+                {#            stored_files.splice(i, 1);#}
+                {#            //break;#}
+                {#        }#}
+                {#    }#}
+                {#    $(this).remove();#}
+                {# }#}
+
+                {#$('#lat').change(function (event) {#}
+                {#    let lat = $('#lat');#}
+                {##}
+                {#    if (lat.val() < -90 || lat.val() > 90) {#}
+                {#        lat[0].setCustomValidity("Il valore deve essere compreso tra -90 e 90.");#}
+                {#    }#}
+                {#    else {#}
+                {#        lat[0].setCustomValidity("");#}
+                {#    }#}
+                {# });#}
+                {##}
+                {#$('#lng').change(function (event) {#}
+                {#    let lng = $('#lng');#}
+                {##}
+                {#    if (lng.val() < -180 || lng.val() > 180) {#}
+                {#        lng[0].setCustomValidity("Il valore deve essere compreso tra -180 e 180.");#}
+                {#    }#}
+                {#    else {#}
+                {#        lng[0].setCustomValidity("");#}
+                {#    }#}
+                {# });#}
+                {##}
+                {#$("#files").on("change", handleFileSelect);#}
+                {#body.on("click", ".sel_file", removeFile);#}
+                {##}
+                {#function categoria_ajax(data, select_to_populate) {#}
+                {#    data['csrfmiddlewaretoken'] = "{{ csrf_token }}";#}
+                {#    var select = $('#' + select_to_populate);#}
+                {#    $.ajax({#}
+                {#        url: "{% url 'sacher:get_subcategory'%}",#}
+                {#        data: data,#}
+                {#        dataType: 'json',#}
+                {#        method: 'POST',#}
+                {#        async: false,#}
+                {#        success: function (data) {#}
+                {#            data = JSON.parse(data.content);#}
+                {#            if (jQuery.isEmptyObject(data)) {#}
+                {#                // Se vuoto disabilito il select qualificazione#}
+                {#                $('#' + select_to_populate).prop('disabled', true).empty();#}
+                {#            }#}
+                {#            else {#}
+                {#                $('#' + select_to_populate).prop('disabled', false).empty();#}
+                {#            }#}
+                {#            $(select).append($('<option></option>').val("").html("---------"));#}
+                {#            $.each(data, function (i, data) {#}
+                {#                $(select).append(#}
+                {#                    $('<option></option>').val(data.id).html(data.nome)#}
+                {#                )#}
+                {#            });#}
+                {#        }#}
+                {#    });#}
+                {# }#}
+                {##}
+                {#$('#macrocategoria').change(function () {#}
+                {#    let data = {#}
+                {#        'selected_id': $(this).val(),#}
+                {#        'desired_category': 'DEF_TIPOLOGICA',#}
+                {#    };#}
+                {#    let select_to_populate = 'def_tipologica';#}
+                {##}
+                {#    $('#qualificazione').empty();#}
+                {#    categoria_ajax(data, select_to_populate);#}
+                {# });#}
+                {##}
+                {#$('#def_tipologica').change(function () {#}
+                {#    let data = {#}
+                {#        'selected_id': $(this).val(),#}
+                {#        'desired_category': 'QUALIFICAZIONE',#}
+                {#    };#}
+                {#    let select_to_populate = 'qualificazione';#}
+                {#    categoria_ajax(data, select_to_populate);#}
+                {# });#}
+                {#$('#add_model_form').submit(function (e) {#}
+                {#    e.preventDefault();#}
+                {##}
+                {#    var data = new FormData();#}
+                {#    data.append('ply_model_file', ply_model_input[0].files[0]);#}
+                {#    data.append('nxs_model_file', nxs_model_input[0].files[0]);#}
+                {#    data.append('texture_file', texture_input[0].files[0]);#}
+                {#    data.append('anno', $('#year-input').val());#}
+                {#    data.append('csrfmiddlewaretoken', '{{ csrf_token }}');#}
+                {#    data.append('elem_id', '{{ elemento.id }}');#}
+                {##}
+                {#    $(progress).parent().show();#}
+                {##}
+                {#    $.ajax({#}
+                {#        xhr: function () {#}
+                {#            var xhr = new window.XMLHttpRequest();#}
+                {##}
+                {#            xhr.upload.addEventListener("progress", function (evt) {#}
+                {#                if (evt.lengthComputable) {#}
+                {#                    var percentComplete = evt.loaded / evt.total;#}
+                {#                    percentComplete = parseInt(percentComplete * 100);#}
+                {#                    $(progress).css("width", percentComplete + '%').attr("aria-valuenow", percentComplete);#}
+                {##}
+                                    {#if (percentComplete === 100) {#}
+                                    {#    $(progress).text(percentComplete + '%');#}
+                                    {# }#}
+                {#                }#}
+                {#            }, false);#}
+                {#            return xhr;#}
+                {#        },#}
+                {#        url: "{% url 'sacher:add_model' %}",#}
+                {#        type: "POST",#}
+                {#        data: data,#}
+                {#        cache: false,#}
+                {#        contentType: false,#}
+                {#        processData: false,#}
+                {#        success: function (result) {#}
+                {#            $(progress).parent().hide("drop", {direction: "up"}, "slow");#}
+                {#            $(progress).css("width", '0%').attr("aria-valuenow", 0);#}
+                {#            console.log(result);#}
+                {#            add_model_dialog.dialog('close');#}
+                {#        }#}
+                {#    });#}
+                {# });#}
+                {#ply_model_input.change(function () {#}
+                {#    $('label[for=' + $(ply_model_input).prop('id') + ']').text($(ply_model_input).val().split('\\').pop());#}
+                {# });#}
+                {#texture_input.change(function () {#}
+                {#    $('label[for=' + $(texture_input).prop('id') + ']').text($(texture_input).val().split('\\').pop());#}
+                {# });#}
+                {#nxs_model_input.change(function () {#}
+                {#    $('label[for=' + $(nxs_model_input).prop('id') + ']').text($(nxs_model_input).val().split('\\').pop());#}
+                {# });#}
+                {#$(document).ready(function () {#}
+                {##}
+                {#    {% for op in operazioni_list %}#}
+                {#        ops.push({#}
+                {#            id: {{ op.id }},#}
+                {#            elemento: "{{ op.elemento }}",#}
+                {#            titolo: "{{ op.titolo }}",#}
+                {#            desc: "{{ op.descrizione|escapejs }}",#}
+                {#            compilatore: "{{ op.compilatore }}",#}
+                {#            responsabile: "{{ op.responsabile}}",#}
+                {#            attivita: "{{ op.attivita }}",#}
+                {#            ambito: "{{ op.ambito}}",#}
+                {#            tags: "{{ op.tags }}",#}
+                {#            data_inizio: "{{ op.data_inizio}}",#}
+                {#            data_fine: "{{ op.data_fine}}",#}
+                {#            images: [#}
+                {#                {% for f in images %}#}
+                {#                    {% if f.operazione.id == op.id %}#}
+                {#                        "{{ base_url }}{{ f.path }}",#}
+                {#                    {% endif %}#}
+                {#                {% endfor %}#}
+                {#            ],#}
+                {#            files: [#}
+                {#                {% for f in files %}#}
+                {#                    {% if f.operazione.id == op.id %}#}
+                {#                        ["{{ base_url }}{{ f.path }}", "{% url 'sacher:get_file_icon' f.id %}", "{{ f.filename }}"],#}
+                {#                    {% endif %}#}
+                {#                {% endfor %}#}
+                {#            ],#}
+                {#            ref3d_id: [#}
+                {#                {% for r in op.ref3d_set.all %}#}
+                {#                    "{{ r.id }}",#}
+                {#                {% endfor %}#}
+                {#            ]#}
+                {#        });#}
+                {#    {% endfor %}#}
+                {##}
+                {##}
+                {# });#}
+            </script>
+
+        {% endif %}
+    {% endspaceless %}
+
+{% endblock %}

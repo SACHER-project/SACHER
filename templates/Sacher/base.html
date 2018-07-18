@@ -1,0 +1,76 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <link rel="icon" href="{% static 'sacher/imgs/SACHER_CHEA_2.png' %}">
+    {#TODO spostare le import dove servono#}
+    <script src="{% static 'sacher/vendor/popper/popper.min.js' %}"></script>
+    <!-- Bootstrap core CSS -->
+    <script src="{% static 'sacher/3dhop_static/js/jquery.js' %}"></script>
+    {#    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>#}
+    <script src="{% static 'sacher/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    {#    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>#}
+    <link href="{% static 'sacher/vendor/bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+    {#    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">#}
+    <!--JQUERY-->
+    {#    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">#}
+    <link rel="stylesheet" href="{% static 'sacher/vendor/jquery-ui-1.12.1/jquery-ui.min.css' %}">
+    {#    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>#}
+    <script src="{% static 'sacher/vendor/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+    <!-- Font Awesome per icone -->
+    <link rel="stylesheet" href="{% static 'sacher/vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    {#    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">#}
+
+    <title>{% block title %}Sacher{% endblock title %}</title>
+    <link href="{% static 'sacher/css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'sacher/css/navbarGuest.css' %}" rel="stylesheet">
+    {% block head %}
+        {#        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">#}
+        {#        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">#}
+        {#        <meta name="description" content="">#}
+        {#        <meta name="author" content="">#}
+    {% endblock head %}
+
+    {% block head_link %}{% endblock head_link %}
+
+    {#    {% if user.is_authenticated %}#}
+    {#        <link href="{% static 'sacher/css/navbarLogged.css' %}" rel="stylesheet">#}
+    {#    {% else %}#}
+
+    {#    {% endif %}#}
+
+</head>
+
+<body>
+{% include "Sacher/navbar.html" %}
+<script>
+    const navbar = $('#sacher-navbar');
+    const navbarHeight = navbar.height() + parseFloat(navbar.css('padding-top')) + parseFloat(navbar.css('padding-bottom'));
+    const wWidth = $(window).width();
+    const wHeight = $(window).height() - navbarHeight;
+    var dWidth = 0, dHeight = wHeight + 1;
+    let percent = 0.8;
+    while (dHeight > wHeight) {
+        dWidth = wWidth * percent;
+        dHeight = dWidth * (2 / 3.);
+
+        percent -= 0.05;
+    }
+
+    $(function () {
+        $('[data-toggle="popover"]').popover();
+    });
+    $('.popover-dismiss').popover({
+        trigger: 'focus'
+    });
+</script>
+
+{#<h1>{% block h1title %}{% endblock h1title %}</h1>#}
+
+{% block content %}{% endblock content %}
+
+</body>
+{% block after_body %}{% endblock %}
+</html>

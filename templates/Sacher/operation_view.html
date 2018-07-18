@@ -1,0 +1,220 @@
+{% load static %}
+{% block head %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-lazyload/8.7.1/lazyload.min.js"></script>
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <!-- Modal -->
+        <div id="imagemodal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div id="carousel-images" class="carousel slide" data-ride="carousel" data-interval="false">
+
+                        <!-- Wrapper for slides -->
+                        <div id="carousel-inner" class="carousel-inner">
+                            <div class="carousel-item active">
+                                <img class="d-xl-block w-100" src="http://placehold.it/1200x600/555/000&text=One" alt="...">
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <a class="carousel-control-prev" href="#carousel-images" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carousel-images" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var stored_files = [];
+            var imgs_to_remove = [];
+            const ops = [];
+            let op_list = $('#op-table');
+            let cur_op = null;
+            op_list.click(function (e) {
+                if (e.target.tagName === 'LABEL') {
+                    let id = e.target.id;
+                    for (op in ops) {
+                        if (ops[op].id == id) {
+                            cur_op = ops[op];
+                            break;
+                        }
+                    }
+                    // Completo i campi del secondo dialog
+                    let ambito = $("input[name='ambito']");
+                    let attivita = $("input[name='attivita']");
+
+                    ambito.attr("id", cur_op.ambito_id).val(cur_op.ambito);
+                    attivita.attr("id", cur_op.attivita_id).val(cur_op.attivita);
+                    current_op_data['ambito'] = [cur_op.ambito.id, cur_op.ambito];
+                    current_op_data['attivita'] = [cur_op.attivita.id, cur_op.attivita];
+
+                    // Il campo titolo deve essere composizione di attivita, ambito e elemento
+                    $("input[name='titolo']").val(cur_op.titolo);
+                    $("textarea[name='descrizione']").html(cur_op.desc);
+                    $("input[name='elemento']").val(cur_op.elemento);
+                    $('input[name=responsabile]').val("{{ request.user.username }}");
+
+
+                    $("input[name='data_inizio']").val(cur_op.data_inizio).prop('readonly', true);
+                    $("input[name='data_fine']").val(cur_op.data_fine).prop('readonly', true);
+
+
+                    {% if sacher_perms >= 2 or user.groups.all.0.name == 'ente' %}
+                        $('#download-op').show();
+                        var file = $('#storedFiles');
+                        file.empty();
+
+                        let files = cur_op.images;
+                        let filesArr = Array.prototype.slice.call(files);
+                        file.append("<table id='img_table' width='100%'></table>");
+                        var table = $('#img_table');
+                        const interesting_tags = ['DateTimeOriginal', 'ApertureValue', 'Make', 'Model', 'DateTime', 'XResolution', 'YResolution', 'ColorSpace', 'PixelYDimension', 'PixelXDimension', 'ExposureTime', 'FNumber', 'ISOSpeedRatings'];
+                        var i = 0;
+                        $('#carousel-inner').empty();
+                        filesArr.forEach(function (f) {
+                            table.append("<tr><td>" +
+                                "<img id='img_" + i + "' class='img-thumbnail' src='" + encodeURI(f[0]) + "' width='200'>" +
+                                "<div class='full-resolution' id='" + encodeURI(f[1]) + "' style='display: none;'></div>" +
+                                "</td></tr>");
+
+                            $('#carousel-inner').append('<div id="img-full-resolution-' + i + '" class="carousel-item">' +
+                                '<img class="d-xl-block w-100" data-src="' + encodeURI(f[1]) + '">' +
+                                '</div>');
+
+                            {#let img = $('#img_' + i);#}
+                            {#let img = $('#img-full-resolution-' + i);#}
+                            {#EXIF.my_f(img.attr('src'), my_f_callback);#}
+                            {#EXIF.getData(img, function () {#}
+                            {#    var allMetaData = EXIF.getAllTags(this);#}
+                            {#    console.log(allMetaData);#}
+                            {# });#}
+
+                            i += 1;
+                        });
+                        for (i = 0; i < cur_op.files.length; i++) {
+                            table.append("<tr><td><a href='" + cur_op.files[i][0] + "'><img src='" + cur_op.files[i][1] +
+                                "' style='height:{{ thmb_h|default:100 }}px; width:{{ thmb_w|default:100 }}px; object-fit: cover;'/>" + cur_op.files[i][2] + "</a></tr></td>");
+                        }
+                    {% endif %}
+
+                    {#function my_f_callback(e) {#}
+                    {#    console.log(e);#}
+                    {#    EXIF.getData(e, function () {#}
+                    {#        var allMetaData = EXIF.getAllTags(this);#}
+                    {#        console.log(allMetaData);#}
+                    {#    });#}
+                    {# }#}
+
+                    $("#operation-full-dialog-form").dialog({
+                        appendTo: '#3dhop-container',
+                        autoOpen: false,
+                        width: 800,
+                        height: 700,
+                        modal: false,
+                        show: {
+                            effect: "drop",
+                            direction: 'up',
+                        },
+                        open: function (event, ui) {
+                            $('form#uploadImages').find(':input[type=submit]').prop('disabled', false);
+                            // Visualizzo tutti gli hotspot dell'operazione corrente
+                            toggleHotspots(cur_op, true);
+                        },
+                        close: function (event, ui) {
+                            $("input[name=data_inizio]").datepicker("hide");
+                            $("input[name=data_fine]").datepicker("hide");
+                            $('#selectedFiles').empty();
+                            $('#storedFiles').empty();
+                            $('#files').val("");
+                            toggleHotspots(cur_op, true);
+                        },
+                    });
+                    operation_full_dialog.dialog('open');
+                }
+            });
+
+            function toggleHotspots(op, disableAllSpots = false) {
+                if (op == null) {
+                    return;
+                }
+                if (disableAllSpots === true) {
+                    presenter.toggleSpotVisibilityByName(HOP_ALL, true);
+                }
+                for (let i in op.ref3d_id) {
+                    presenter.toggleSpotVisibilityByName(op.ref3d_id[i], true);
+                }
+            }
+
+            var body = $("body");
+            body.on('click', '.img-thumbnail', function () {
+                $('#carousel-inner .active').removeClass('active');
+                const n = $(this).attr('id').replace('img_', '');
+                let str = '#img-full-resolution-' + n;
+                $(str).addClass("active");
+                $(str).children('img').attr('src', $(str).children('img').attr('data-src'));
+                $('#imagemodal').modal('toggle');
+            });
+
+            $('#carousel-images').on('slide.bs.carousel', function (ev) {
+                let lazy;
+                lazy = $(ev.relatedTarget).find("img[data-src]");
+                lazy.attr("src", lazy.data('src'));
+                lazy.removeAttr("data-src");
+            });
+
+            $(document).ready(function () {
+                let x = {};
+                {% for op in ops_json %}
+                    x = {{ op|safe }};
+                    ops.push(x);
+                {% endfor %}
+             });
+            {#$(document).ready(function () {#}
+            {#    {% for op in operazioni_list %}#}
+            {#        ops.push({#}
+            {#            id: {{ op.id }},#}
+            {#            elemento: "{{ op.elemento }}",#}
+            {#            titolo: "{{ op.titolo }}",#}
+            {#            desc: "{{ op.descrizione|escapejs }}",#}
+            {#            compilatore: "{{ op.compilatore }}",#}
+            {#            responsabile: "{{ op.responsabile}}",#}
+            {#            attivita: "{{ op.attivita }}",#}
+            {#            attivita_id: "{{ op.attivita.id }}",#}
+            {#            ambito: "{{ op.ambito }}",#}
+            {#            ambito_id: "{{ op.ambito.id }}",#}
+            {#            tags: "{{ op.tags }}",#}
+            {#            data_inizio: "{{ op.data_inizio|date:"Y-m-d" }}",#}
+            {#            data_fine: "{{ op.data_fine|date:"Y-m-d" }}",#}
+            {#            images: [#}
+            {#                {% for f in images %}#}
+            {#                    {% if f.operazione.id == op.id %}#}
+            {#                        ["{{ base_url }}{{ f.path_thumbnail }}", "{{ base_url }}{{ f.path }}"],#}
+            {#                    {% endif %}#}
+            {#                {% endfor %}#}
+            {#            ],#}
+            {#            files: [#}
+            {#                {% for f in files %}#}
+            {#                    {% if f.operazione.id == op.id %}#}
+            {#                        ["{{ base_url }}{{ f.path }}", "{% url 'sacher:get_file_icon' f.id %}", "{{ f.filename }}"],#}
+            {#                    {% endif %}#}
+            {#                {% endfor %}#}
+            {#            ],#}
+            {#            ref3d_id: [#}
+            {#                {% for r in op.ref3d_set.all %}#}
+            {#                    "{{ r.id }}",#}
+            {#                {% endfor %}#}
+            {#            ]#}
+            {#        });#}
+            {#    {% endfor %}#}
+            {# });#}
+        </script>
+    {% endspaceless %}
+{% endblock %}

@@ -1,0 +1,270 @@
+{% extends "Sacher/base.html" %}
+{% load static %}
+{% block title %}Sacher{% endblock %}
+
+{% block head_link %}
+    <!-- Custom styles for this template -->
+    <link href="{% static 'sacher/css/full-slider.css' %}" rel="stylesheet">
+    <link href="{% static 'sacher/css/style.css' %}" rel="stylesheet">
+
+{% endblock %}
+
+{% block content %}
+    {% spaceless %}
+        <header>
+
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class=""></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="1" class="active"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="2" class=""></li>
+                </ol>
+                <div class="carousel-inner" role="listbox">
+                    <!-- Slide One - Set the background image for this slide in the line below -->
+                    <div class="carousel-item" style="background-image: url({% static 'sacher/imgs/slideshow/piazzamaggiore.JPG' %})">
+
+                        <div class="carousel-caption">
+                            <div class="row">
+
+                                <div class="col-xs-12 col-md-9">
+                                    <h2>News</h2>
+                                    <h3>Piazza Maggiore</h3>
+                                    <hr>
+                                    <p style="font-size: 1rem;">
+                                        L’odierna Piazza Maggiore, che ospita la chiesa di San Petronio ed un interessante
+                                        complesso di palazzi adibiti a funzioni pubbliche, come Palazzo del podestà, Palazzo
+                                        Re Enzo e del Capitano del Popolo, fu creata nel 1200, quando il comune attuò un
+                                        intervento di espropriazione di numerosi edifici per la creazione del nuovo spazio
+                                        pubblico.
+                                    </p>
+                                </div>
+                                <div class="col-xs-12 col-md-3">
+                                    <p class="social-icon">
+                                        <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                                        <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide Two - Set the background image for this slide in the line below -->
+                    <div class="carousel-item active"
+                         style="background-image: url({% static 'sacher/imgs/slideshow/reenzo.JPG' %})">
+                        <div class="carousel-caption">
+                            <div class="row">
+
+                                <div class="col-xs-12 col-md-9">
+                                    <h2>News</h2>
+                                    <h3>Palazzo Re Enzo</h3>
+                                    <hr>
+                                    <p style="font-size: 1rem;">Palazzo Re Enzo, o antico Palatium Novum, fu costruito tra il 1244 e il 1246 per
+                                        ospitare la sede del Comune; divenne invece la ricca prigione di Enzo, Re di
+                                        Sardegna, figlio dell’imperatore Federico II di Svevia. Re Enzo fu fatto prigioniero
+                                        durante la battaglia di Fossalta nel 1249 e i bolognesi lo tennero rinchiuso fino
+                                        alla sua morte avvenuta nel 1272, in questo palazzo cui venne dato il suo nome.
+                                        Anticamente il pianterreno del palazzo era usato come armeria e deposito per il
+                                        carroccio. L’aspetto attuale di Palazzo Re Enzo è il frutto di radicali interventi
+                                        di restauro realizzati da Alfonso Rubbiani tra il 1905 e il 1913.
+                                        <a href="http://bolognawelcome.com">www.bolognawelcome.com</a>
+                                    </p>
+                                </div>
+                                <div class="col-xs-12 col-md-3">
+                                    <p class="social-icon">
+                                        <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                                        <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide Three - Set the background image for this slide in the line below -->
+                    <div class="carousel-item"
+                         style="background-image: url({% static 'sacher/imgs/slideshow/podestà.JPG' %})">
+                        <div class="carousel-caption">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-9">
+                                    <h2>News</h2>
+                                    <h3>Palazzo del Podestà</h3>
+                                    <hr>
+                                    <p style="font-size: 1rem;">Il Palazzo del Podestà cominciò ad essere edificato nel 1200 insieme alla piazza
+                                        stessa. Del primo impianto romanico rimane solo una porzione della facciata, mentre
+                                        il palazzo che vediamo oggi fu modificato nel 1484 sotto la signoria di Giovanni II
+                                        Bentivoglio. Il palazzo non venne però mai terminato a causa di un’insurrezione
+                                        popolare che portò alla brusca interruzione del suo dominio sulla città. Questo è il
+                                        motivo per cui la facciata è priva di cornicione e di merli. I sostegni del
+                                        magnifico porticato sono fregiati da oltre tremila rosette scolpite, ognuna diversa
+                                        dall’altra. Sopra il portico c’è il salone del Podestà il più grande di Bologna, in
+                                        tempi passati aula di giustizia e sede dei processi, ora utilizzata per feste ed
+                                        eventi. Sopra le arcate del portico corre la balconata da cui venivano rese
+                                        pubbliche le decisioni del governo ed eseguite le sentenze di morte, solitamente
+                                        tramite impiccagione. Al Palazzo del Podestà furono accostati il Palazzo Re Enzo e
+                                        il palazzo del Capitano del Popolo, separati soltanto dal voltone del Podestà.
+                                        <a href="http://bolognawelcome.com">www.bolognawelcome.com</a>
+                                    </p>
+                                </div>
+                                <div class="col-xs-12 col-md-3">
+                                    <p class="social-icon">
+                                        <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                                        <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+
+        </header>
+
+        <section class="container info">
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="http://www.sacherproject.com"><img src="{% static 'sacher/imgs/sacher_project.png' %}" style="width: 100%;"/></a>
+                    <p>CONTATTI</p>
+                    <p>REBECCA MONTANARI <br/>
+                        CIRI - ICT <br/>
+                        UNIVERSITÀ DEGLI STUDI DI BOLOGNA</p>
+                    <p>TEL. 051.2093865 REBECCA.MONTANARI@UNIBO.IT <br/> INFO@SACHERPROJECT.COM</p>
+                    <p>WWW.SACHERPROJECT.COM FACEBOOK.COM/SACHERPROJECT</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="well well-sm pre-scrollable" style="max-height:550px;">
+                        <h2>SMART ARCHITECTURE FOR CULTURAL HERITAGE IN EMILIA ROMAGNA</h2>
+                        <div id="containerLog" class="scroll-pane">
+                            -- <br/>
+                            SACHER (Smart Architecture for Cultural Heritage in Emilia Romagna) è un progetto finanziato
+                            nell’ambito del Fondo europeo regionale dell’Emilia Romagna (POR FESR 2014-2020).
+                            Il progetto intende fornire un apporto fondamentale alla valorizzazione dei Beni Culturali,
+                            garantendo alle istituzioni culturali italiane, agli esperti del settore e al pubblico una
+                            innovativa piattaforma ICT, disponibile su web, che faciliti l’accesso ai dati relativi ai Beni
+                            Culturali (BBCC) in tutta la fase della loro vita.<br/>
+                            Sfruttando le risorse del Cloud Computing e del paradigma Active Digital Identity, SACHER
+                            garantirà all’utente un prodotto completamente distribuito e open source, in grado di integrare
+                            le infrastrutture hardware e software, pubbliche o private, impegnate nella conservazione dei
+                            dati relativi al vasto patrimonio culturale nazionale.<br/>
+                            La piattaforma metterà a disposizione servizi applicativi personalizzati in grado di assicurare
+                            l’accesso, l’analisi e la presentazione dei dati BBCC sia a specialisti del settore
+                            (restauratori, architetti, storici, archeologi ecc.) che a cittadini e turisti.<br/>
+                            Il progetto intende favorire il consolidamento di nuovi modelli di business culturale mediante
+                            l’integrazione di soggetti pubblici e privati che operano all’interno dell’imprenditoria sociale
+                            e delle ICT.<br/>
+                            Si vuole così generare un ecosistema di servizi e attori in grado di costruire nuove filiere di
+                            valori nell’area della produzione e della fruizione collaborativa di servizi culturali.<br/>
+                            La validazione della piattaforma SACHER avverrà in collaborazione con il Comune di Bologna su
+                            Beni Culturali all’interno dell’area del Palazzo del Podestà e porterà alla realizzazione di una
+                            versione di prova del prodotto finale che possa essere rapidamente trasferito sul mercato e
+                            disponibile in vari contesti di città d’arte.
+
+                            SACHER: project funded by Regione Emilia-Romagna (POR FESR 2014/2020)
+                            <br/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- Link map section -->
+        <div class="img-wrapper">
+            <img class="img-responsive" src="{% static 'sacher/imgs/mappa_home.jpg' %}">
+            <div class="img-overlay">
+                <a href="{% url 'sacher:bc_list' %}"><!-- TODO: cambia link -->
+                    <button class="btn btn-md">ESPLORA</button>
+                </a>
+            </div>
+        </div>
+
+        <section class="container">
+            <div class="col-md-12" style="background: url('http://placehold.it/1900x400'); ">
+            </div>
+        </section>
+        <!-- Partner -->
+        <section style="background-color: #f0e3d4;" class="py-5 cpa">
+            <div class="container">
+                <h1 style="font-size: 10pt;">COORDINATORE</h1>
+                <div class="col-md-12">
+                    <a href="http://www.ciri-ict.unibo.it/it" target="_blank"> <img src="{% static 'sacher/imgs/1.png' %}"
+                                                                                    name="coordinatore" width="140"
+                                                                                    height="140" class="img-circle"></a>
+                </div>
+            </div>
+            <div class="container">
+                <h1 style="font-size: 10pt;">PARTNER</h1>
+                <div class="col-md-12">
+                    <a href="http://www.softech.unimore.it/site/home.html" target="_blank"> <img
+                            src="{% static 'sacher/imgs/2.png' %}" name="partner1" width="140" height="140"
+                            class="img-circle"></a>
+                    <a href=" http://www.centuria-agenzia.it/" target="_blank"> <img src="{% static 'sacher/imgs/3.png' %}"
+                                                                                     name="partner2" width="140"
+                                                                                     height="140" class="img-circle"></a>
+                </div>
+            </div>
+            <div class="container">
+                <h1 style="font-size: 10pt;">ALTRI<br/> PARTECIPANTI</h1>
+                <div class="col-md-12">
+                    <a href="http://www.comune.bologna.it/" target="_blank"> <img src="{% static 'sacher/imgs/4.png' %}"
+                                                                                  name="partecipante1" width="140"
+                                                                                  height="140" class="img-circle"></a>
+
+                    <a href="http://www.eng.it/" target="_blank"> <img src="{% static 'sacher/imgs/5.png' %}"
+                                                                       name="partecipante2" width="140" height="140"
+                                                                       class="img-circle"></a>
+                    <a href="http://studioleonardo.it/" target="_blank"> <img src="{% static 'sacher/imgs/6.png' %}"
+                                                                              name="partecipante3" width="140" height="140"
+                                                                              class="img-circle"></a>
+                    <a href="http://www.imolinfo.it/" target="_blank"> <img src="{% static 'sacher/imgs/7.png' %}"
+                                                                            name="partecipante4" width="140" height="140"
+                                                                            class="img-circle"></a>
+
+                </div>
+            </div>
+        </section>
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+        <!--footer-->
+        <footer class="footer1">
+            <div class="container">
+                <div class="row"><!-- row -->
+                    <div class="col-lg-4 col-md-4"><!-- widgets column center -->
+                        <ul class="list-unstyled clear-margins"><!-- widgets -->
+                            <li class="widget-container widget_recent_news"><!-- widgets list -->
+                                <div class="footerp" style="border-right: 1px solid #95613a;">
+                                    <h2 class="title-median">Sacher</h2>
+                                    <p>Informazioni: <br/>
+                                        mail / info@sacherproject.com<br/>
+                                        tel / 051.2093865</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-8 col-md-8"><!-- widgets column center -->
+                        <ul class="list-unstyled clear-margins"><!-- widgets -->
+                            <li class="widget-container widget_recent_news"><!-- widgets list -->
+                                <div class="footerp">
+                                    <h2 class="title-median">SACHER: progetto finanziato dalla Regione Emilia-Romagna
+                                        (POR-FESR 2014 - 2020) | info@sacherproject.com</h2>
+                                    <p class="footerImage">
+                                        <img src="{% static 'sacher/imgs/footer.jpg' %}" name="footer" height="60"
+                                             class="img-circle footerImage">
+                                        {#                                <!--  <img src="{% static 'sacher/imgs/footer2.png' %}" name="footer2" width="180" height="140" class="img-circle footerImage">#}
+                                        {#                                  <img src="{% static 'sacher/imgs/footer3.png' %}" name="footer3" width="100" height="140" class="img-circle footerImage">#}
+                                        {#                                  <img src="{% static 'sacher/imgs/footer4.png' %}" name="footer4" width="220" height="120" class="img-circle footerImage"> -->#}
+                                    </p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!--footer-->
+    {% endspaceless %}
+{% endblock %}

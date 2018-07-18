@@ -1,0 +1,166 @@
+{% extends 'Sacher/base.html' %}
+{% load static %}
+{% block head %}
+    {% if user.is_authenticated %}
+        <link href="{% static 'sacher/css/sidebar.css' %}" rel="stylesheet">
+        <link href="{% static 'sacher/css/beneculturale_detail.css' %}" rel="stylesheet">
+    {% endif %}
+{% endblock %}
+{% block title %}{{ elemento.nome }}{% endblock %}
+{% block h1title %}{{ elemento.nome }}{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="operazioni">
+
+            {% if user.is_authenticated %}
+                {% if sacher_perms >= 4 or user.groups.all.0.name == 'ente' %}
+                    <div class="modifica-elemento">
+                        {#                        <a href="{% url 'sacher:elemento_update' elemento.id %}">Modifica</a>#}
+                        {#                        <a href="#" onclick="edit_element()" id="edit_element">Modifica Elemento</a>#}
+                        {##}
+                        {#                        <a href="{% url 'sacher:elemento_delete' elemento.id %}">Elimina</a>#}
+                        {#                        <a href="#" id="elemento-delete">Elimina</a>#}
+                        {% if elemento.id %}
+{#                            <a href="#" onclick="add_model()" id="add_model">Aggiungi Modello 3D</a>#}
+                        {% endif %}
+{#                        <a href="#" onclick="add_elemento()" id="add_elemento">Aggiungi Sottoelemento</a>#}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {% if params3dhop.modello3d or params3dhop.children %}
+            {% include 'Sacher/3dhop_widget.html' with params=params3dhop show_spots="True" group=user.groups.all.0.name %}
+        {% else %}
+            <p style="text-align: center;">Nessun modello 3D.</p>
+        {% endif %}
+        {% if user.is_authenticated %}
+            {% include 'Sacher/elements_double_sidebar.html' with elementi_tree=elementi_tree %}
+            {% include 'Sacher/operation_view.html' %}
+
+{#            <div id="add_model_dialog" style="display:none;">#}
+{#                <form id="add_model_form" enctype="multipart/form-data" method="post">{% csrf_token %}#}
+{#                    <div class="container">#}
+{#                        <div class="row form-group">#}
+{#                            <label for="elemento-input" class="col-6 col-form-label">Nome Elemento</label>#}
+                            {#                            <div class="col-8">#}
+{#                            <input class="form-control col-6" type="text" id="elemento-input" value="{{ elemento.nome }}" disabled>#}
+                            {#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row form-group">#}
+{#                            <label for="year-input" class="col-6 col-form-label">Anno</label>#}
+                            {#                            <div class="col-10">#}
+{#                            <input class="form-control col-6" type="number" id="year-input" value="2018" min="0" max="2018">#}
+                            {#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row justify-content-between">#}
+{#                            <div class="col-5 custom-file">#}
+{#                                <input type="file" class="custom-file-input" id="nxs_model_file" accept=".nxs">#}
+{#                                <label class="custom-file-label" for="nxs_model_file">Carica .nxs</label>#}
+{#                            </div>#}
+{#                            <div class="col-5 custom-file">#}
+{#                                <input type="file" class="custom-file-input" id="ply_model_file" accept=".ply">#}
+{#                                <label class="custom-file-label" for="ply_model_file">Carica .ply</label>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row justify-content-between">#}
+{#                            <div class="col-5 offset-7 custom-file">#}
+{#                                <input type="file" class="custom-file-input" id="texture_file" accept="image/*">#}
+{#                                <label class="custom-file-label" for="texture_file">Carica texture</label>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="row progress">#}
+{#                            <div id='progress-bar' class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"#}
+{#                                 style="width: 0%;"></div>#}
+{#                        </div>#}
+{##}
+{#                        <button type="submit">CARICA</button>#}
+{#                        <button type="button" onClick="$('#add_model_dialog').dialog('close');">ESCI</button>#}
+{#                    </div>#}
+{#                </form>#}
+{#            </div>#}
+
+
+            <script>
+                {#var add_model_dialog = $('#add_model_dialog');#}
+                {#var ply_model_input = $('#ply_model_file');#}
+                {#var texture_input = $('#texture_file');#}
+                {#var nxs_model_input = $('#nxs_model_file');#}
+                {#var progress = $('#progress-bar');#}
+
+                {#function add_model() {#}
+                {#    add_model_dialog.dialog({#}
+                {#        autoOpen: false,#}
+                {#        height: 'auto',#}
+                {#        width: 600,#}
+                {#        modal: true,#}
+                {#        title: "Aggiungi Modello 3d",#}
+                {#        open: function (event, ui) {#}
+                {#            $(add_model_dialog).find('.progress').hide();#}
+                {#            $('.ui-widget-overlay').bind('click', function () {#}
+                {#                add_model_dialog.dialog('close');#}
+                {#            });#}
+                {#        },#}
+                {#        close: function (event, ui) {#}
+                {#        },#}
+                {#    });#}
+                {#    add_model_dialog.dialog('open');#}
+                {# }#}
+                {##}
+                {#$('#add_model_form').submit(function (e) {#}
+                {#    e.preventDefault();#}
+                {##}
+                {#    var data = new FormData();#}
+                {#    data.append('ply_model_file', ply_model_input[0].files[0]);#}
+                {#    data.append('nxs_model_file', nxs_model_input[0].files[0]);#}
+                {#    data.append('texture_file', texture_input[0].files[0]);#}
+                {#    data.append('anno', $('#year-input').val());#}
+                {#    data.append('csrfmiddlewaretoken', '{{ csrf_token }}');#}
+                {#    data.append('elem_id', '{{ elemento.id }}');#}
+                {##}
+                {#    $(progress).parent().show();#}
+                {##}
+                {#    $.ajax({#}
+                {#        xhr: function () {#}
+                {#            var xhr = new window.XMLHttpRequest();#}
+                {##}
+                {#            xhr.upload.addEventListener("progress", function (evt) {#}
+                {#                if (evt.lengthComputable) {#}
+                {#                    var percentComplete = evt.loaded / evt.total;#}
+                {#                    percentComplete = parseInt(percentComplete * 100);#}
+                {#                    $(progress).css("width", percentComplete + '%').attr("aria-valuenow", percentComplete);#}
+                {##}
+                                    {#if (percentComplete === 100) {#}
+                                    {#    $(progress).text(percentComplete + '%');#}
+                                    {# }#}
+                {#                }#}
+                {#            }, false);#}
+                {#            return xhr;#}
+                {#        },#}
+                {#        url: "{% url 'sacher:add_model' %}",#}
+                {#        type: "POST",#}
+                {#        data: data,#}
+                {#        cache: false,#}
+                {#        contentType: false,#}
+                {#        processData: false,#}
+                {#        success: function (result) {#}
+                {#            $(progress).parent().hide("drop", {direction: "up"}, "slow");#}
+                {#            $(progress).css("width", '0%').attr("aria-valuenow", 0);#}
+                {#            console.log(result);#}
+                {#        }#}
+                {#    });#}
+                {# });#}
+                {#ply_model_input.change(function () {#}
+                {#    $('label[for=' + $(ply_model_input).prop('id') + ']').text($(ply_model_input).val().split('\\').pop());#}
+                {# });#}
+                {#texture_input.change(function () {#}
+                {#    $('label[for=' + $(texture_input).prop('id') + ']').text($(texture_input).val().split('\\').pop());#}
+                {# });#}
+                {#nxs_model_input.change(function () {#}
+                {#    $('label[for=' + $(nxs_model_input).prop('id') + ']').text($(nxs_model_input).val().split('\\').pop());#}
+                {# });#}
+
+            </script>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

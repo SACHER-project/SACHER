@@ -1,0 +1,54 @@
+.btn-sacher {
+    background: #fdfc5f;
+    color: #95613a;
+    border: 1px solid #fdfc5f;
+    border-radius: 40px;
+    font-size: 20px;
+    margin: 10px auto;
+    padding: 10px 20px;
+    text-shadow: none;
+    text-decoration: none !important;
+    box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.19) !important;
+    transition: all .5s ease 0s;
+    display: table;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.btn-sacher:hover {
+    text-decoration: none;
+    color: #95613a;
+}
+
+.img-sacher {
+    display: block;
+    margin: auto;
+    width: 80%;
+}
+
+.contact, .contact a{
+    color: #95613a;
+    font-size: 18px;
+    text-decoration: none;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    margin: auto;
+    /*text-align: center;*/
+    /*! color: #95613a; */
+}
+
+.card, .card >.container, #bc-radiolist{
+    height: 100%;
+}
+
+input#username, input#nome, input#cognome{
+    width: 70%;
+    background-color: #d6feff;
+    color: #95613a;
+    border: 1px solid #d6feff;
+}
+.form-group{
+  color: #95613a;
+}

@@ -1,0 +1,25 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}Aggiungi uno o più file all'operazione "{{ operazione.titolo }}"{% endblock %}
+
+{% block h1title %}
+    Aggiungi uno o più file all'operazione "{{ operazione.titolo }}"
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+        <table>
+	    {{ form.as_table }}
+        </table>
+	<input type="submit" value="Carica">
+    </form>
+
+    <h3>Altri file già presenti:</h3>
+    {% for file in operazione.file_set.all %}
+        <p><a href="{% url 'sacher:file_detail' file.id %}">{{ file.filename }}</a>  - <a href="{{ MEDIA_URL }}{{ file.path }}">scarica</a></p>
+    {% empty %}
+        - Nessun file.
+    {% endfor %}
+    <br>
+    <a href="{% url 'sacher:operazione_detail' operazione.id %}">Torna all'operazione</a>
+{% endblock %}

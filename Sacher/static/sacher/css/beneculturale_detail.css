@@ -1,0 +1,11 @@
+.modifica-elemento > a {
+    color: #95613a;
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: 4em;
+    text-decoration: none;
+}
+
+.img-thumbnail {
+    cursor: pointer;
+}

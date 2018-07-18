@@ -1,0 +1,26 @@
+{% load static %}
+{% if files %}
+    <p>{{ files.count }} elementi.</p>
+    <table border="{{ border|default:0 }}" cellpadding="{{ padding|default:15 }}">
+        <tr>
+        {% for file in files %}
+            <td>
+                <div align="center">
+                    <a href="{% url 'sacher:file_detail' file.id %}">
+                        <img src="{% url 'sacher:thumbnailer' file.id %}" style="height:{{ thmb_h|default:100 }}px; width:{{ thmb_w|default:100 }}px; object-fit: cover;"/>
+                    </a>
+                    <br>
+                    <a href="{% url 'sacher:file_detail' file.id %}">{{ file.filename }}</a>
+                    <br>
+                    <a href="{{ base_url }}{{ file.path }}">scarica</a>
+                </div>
+            </td>
+            {% if forloop.counter|divisibleby:6 and not forloop.last %}
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    </table>
+{% else %}
+    <p>{{ empty_msg|default:"Nessun file." }}</p>
+{% endif %}

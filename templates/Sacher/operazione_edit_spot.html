@@ -1,0 +1,16 @@
+{% extends 'Sacher/base.html' %}
+{% load static %}
+{% block title %}Modifica riferimenti 3D dell'operazione "{{ operazione.titolo }}"{% endblock %}
+{% block h1title %}Modifica riferimenti 3D dell'operazione "{{ operazione.titolo }}"{% endblock %}
+
+{% block content %}
+    <a href="{% url 'sacher:operazione_detail' operazione.id %}">Torna all'operazione</a>
+    <br><br>
+
+    {% if params3dhop.elemento or params3dhop.children %}
+        {% include 'Sacher/3dhop_widget.html' with params=params3dhop %}
+    {% else %}
+        <p>Nessun modello 3D.</p>
+    {% endif %}
+
+{% endblock %}

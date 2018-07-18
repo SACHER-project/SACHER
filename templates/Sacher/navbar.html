@@ -1,0 +1,76 @@
+{% load static %}
+<!-- Modal Login-->
+<div class="container">
+    <div class="row">
+        <div id="myModal" class="modal fade in">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="m-header text-center">
+                        <h4 class="modal-title">Login</h4>
+                    </div>
+                    <div class="modal-body text-center">
+                        <form method="post" action="{% url 'sacher:login' %}" name="login_form">{% csrf_token %}
+                            <p><input type="text" name="username" placeholder="username"/></p>
+                            <p><input type="password" name="password" placeholder="*********"/></p>
+                            <div class="btn-group">
+                                <button class="entra" {% comment %}data-dismiss="modal"{% endcomment %}type="submit">ENTRA</button>
+                                <button class="recupera" disabled><a href="{% url 'password_reset' %}">Recupera password</a></button>
+                            </div>
+                        </form>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dalog -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" id="sacher-navbar">
+    <div class="container">
+        <div class="navbar-brand">
+            <a href="/"><img src="{% static "/sacher/imgs/SACHER_CHEA_2.png" %}" alt="Sacher logo" style="max-width:40px;padding-bottom: 4px;"><b>SACHER 3D CH</b></a>
+            {% if bc.nome %}<a href="{% url 'sacher:bc_detail' bc.id %}">| {{ bc.nome }}</a>
+            {% elif elemento %}<a href="{% url 'sacher:bc_detail' elemento.bene_culturale.id %}"> | {{ elemento.bene_culturale.nome }}</a>
+                {% if elemento.padre %}<a href="{% url 'sacher:elemento_detail' elemento.padre.id %}"> | ...</a>{% endif %}
+                <a href="{% url 'sacher:elemento_detail' elemento.id %}"> | {{ elemento.nome }}</a>{% endif %}
+        </div>
+        <a class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <!-- aggiungere all'interno del tag li, nella class: "active" per scritta bianca -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sacher:bc_list' %}">Map</a>
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        {#                        <a class="nav-link" href="{% url 'sacher:logout' %}">Logout</a>#}
+                    {% else %}
+                        <a data-toggle="modal" href="#myModal" class="nav-link">Login</a>
+                    {% endif %}
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown show">
+                        <a class="dropdown-toggle nav-link" href="{% url 'sacher:profile' %}"
+                           role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                           aria-expanded="false">{{ user.username }}</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="{% url 'sacher:profile' %}">Pagina Utente</a>
+                            <a class="dropdown-item" href="{% url 'sacher:projects' %}">Progetti</a>
+                            <a class="dropdown-item" href="{% url 'sacher:logout' %}">Logout</a>
+                        </div>
+                    </li>
+                {% endif %}
+                <li class="btn-group dropdown show">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Help</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" href="#">Contacts</a>
+                        <a class="dropdown-item" href="#">User Manual</a>
+                        <a class="dropdown-item" href="#">Video Tutorials</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

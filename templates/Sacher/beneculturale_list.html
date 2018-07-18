@@ -1,0 +1,295 @@
+{% extends "Sacher/base.html" %}
+{% load static %}
+{% load get_item_dict %}
+
+{% block title %}Sacher{% endblock %}
+{% block head_link %}
+    {% if user.is_authenticated %}
+        {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>#}
+        <script src="{% static 'sacher/vendor/jquery.form.min.js' %}" async></script>
+    {% endif %}
+    <!--JQUERY-->
+    {#    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">#}
+    {#    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>#}
+
+    <link href="{% static 'sacher/css/sidebar.css' %}" rel="stylesheet">
+    <link href="{% static 'sacher/css/styleMap.css' %}" rel="stylesheet">
+
+{% endblock %}
+{% block content %}
+
+    {% spaceless %}
+        {#    <h3>Beni culturali gestiti dalla piattaforma:</h3>#}
+        {% include "Sacher/google_map_widget.html" with bbcc_list=bbcc_list group=user.groups.all.0.name %}
+        <!-- Aside Bar  -->
+        <div id="wrapper">
+            <div class="overlay"></div>
+
+            <!-- Sidebar -->
+            <aside class="" id="sidebar-wrapper" role="search">
+                <ul class="nav sidebar-nav" id="bbcc_ul">
+                    <li id="fixed-search" class="search">
+                        <div class="input-group add-on">
+                            <input class="form-control" placeholder="Cerca per denominazione" name="srch-term" id="srch-term1" type="search" onkeyup="search_denominazione()">
+                            <div class="input-group-btn">
+                                <button class="btn btn-secondary" tabindex="-1"><i class="fa fa-search"></i></button>
+                                {#                                <button class="btn btn-secondary info" tabindex="-1"></button>#}
+                                <button tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                        data-content="Inserire il nome del Bene Culturale da cercare o parte di esso (es: Palazzo del Podestà)."></button>
+                            </div>
+                        </div>
+                        <div class="input-group add-on">
+                            <input class="form-control" placeholder="Cerca per localizzazione" name="srch-term" id="srch-term2" type="search" onkeyup="search_localizzazione()">
+                            <div class="input-group-btn">
+                                <button class="btn btn-secondary" tabindex="-1"><i class="fa fa-search"></i></button>
+                                {#                                <button class="btn btn-secondary info" tabindex="-1"></button>#}
+                                <button tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                        data-content="Inserire l’indirizzo in cui è situato il Bene Culturale da cercare (es: via/piazza, numero civico, località, città)."></button>
+                            </div>
+                        </div>
+                        <div class="input-group add-on">
+                            <input class="form-control" placeholder="Cerca per tipologia" name="srch-term" id="srch-term3" type="search" onkeyup="search_tipologia()">
+                            <div class="input-group-btn">
+                                <button class="btn btn-secondary" tabindex="-1"><i class="fa fa-search"></i></button>
+                                {#                                <button class="btn btn-secondary info" tabindex="-1"></button>#}
+                                <button tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                        data-content="Inserire la macrocategoria o la tipologia architettonica del Bene Culturale da cercare (es: architettura religiosa, militare e fortificata, rurale…)."></button>
+                            </div>
+                        </div>
+                    </li>
+                    {% for bc in bbcc_list %}
+                        <li class="bc-entry"><a id="{{ bc.id }}" title="{{ bc.nome }} - {{ bc.localita }}">{{ bc.nome }}</a></li>
+                    {% endfor %}
+                </ul>
+            </aside>
+            <!-- /#sidebar-wrapper -->
+            <div id="page-content-wrapper">
+                <button type="button" class="hamburger is-closed animated fadeInLeft" data-toggle="offcanvas">
+                    <div id="hamburger1"></div>
+                </button>
+            </div>
+        </div>
+        <!-- /#wrapper -->
+
+        <script>
+            var data;
+            var bc_dialog = $('#bc-dialog');
+
+            function search_denominazione() {
+
+                let value = $("#srch-term1").val().toLowerCase();
+                $(".bc-entry").addClass('denominMismatch').filter(function () {
+                    return this.innerHTML.toLowerCase().indexOf(value) > -1;
+                }).removeClass('denominMismatch');
+            }
+
+            function search_localizzazione() {
+                let value = $("#srch-term2").val().toLowerCase();
+                $(".bc-entry").addClass('localitaMismatch').filter(function () {
+                    let a_id = parseInt(this.firstChild.id);
+                    let result = false;
+                    $.each(bbcc, function (index, bc) {
+                        if (bc.id === a_id) {
+                            result = bc.localita.toLowerCase().indexOf(value) > -1;
+                            return false;
+                        }
+                    });
+                    return result;
+                }).removeClass('localitaMismatch');
+            }
+
+            function search_tipologia() {
+
+                let value = $("#srch-term3").val().toLowerCase();
+                $(".bc-entry").addClass('tipologiaMismatch').filter(function () {
+                    let a_id = parseInt(this.firstChild.id);
+                    let result = false;
+                    $.each(bbcc, function (index, bc) {
+                        if (bc.id === a_id) {
+                            result = bc.categoria.toLowerCase().indexOf(value) > -1;
+                            return false;
+                        }
+                    });
+                    return result;
+                }).removeClass('tipologiaMismatch');
+            }
+
+            function fill_bc_dialog(data) {
+                if (data.name === "") {
+                    $('#bc_name').parent().hide();
+                }
+                else {
+                    $('#bc_name').text(data.name).parent().show();
+                }
+
+                if (data.altra_den === "") {
+                    $('#bc_altra_den').parent().hide();
+                }
+                else {
+                    $('#bc_altra_den').text(data.altra_den).parent().show();
+                }
+
+                if (data.desc === "") {
+                    $('#bc_desc').parent().hide();
+                }
+                else {
+                    $('#bc_desc').text(data.desc).parent().show();
+                }
+
+                if (data.localita === "") {
+                    $('#bc_loc').parent().hide();
+                }
+                else {
+                    $('#bc_loc').text(data.localita).parent().show();
+                }
+
+                if (data.datazione === "") {
+                    $('#bc_datazione').parent().hide();
+                }
+                else {
+                    $('#bc_datazione').text(data.datazione).parent().show();
+                }
+
+                if (data.ente === "") {
+                    $('#bc_ente').parent().hide();
+                }
+                else {
+                    $('#bc_ente').text(data.ente).parent().show();
+                }
+
+                if (data.sito_web === "" || data.sito_web === "") {
+                    $('#bc_sito_web').parent().hide();
+                }
+                else {
+                    $('#bc_sito_web').text(data.sito_web).parent().show();
+                }
+                if (data.phone_number === "") {
+                    $('#bc_tel').parent().hide();
+                }
+                else {
+                    $('#bc_tel').text(data.phone_number).parent().show();
+                }
+
+                if (data.external_link === "") {
+                    $('#bc_link').parent().hide();
+                }
+                else {
+                    $('#bc_link').text(data.external_link).parent().show();
+                }
+
+                if (data.categoria === "") {
+                    $('#bc_categoria').parent().hide();
+                }
+                else {
+                    $('#bc_categoria').text(data.categoria).parent().show();
+                }
+
+                {# Cancello le immagini di altri BBCC e aggiungo le immagini del BC corrente #}
+                var bc_images = $('#bc_images_info');
+                bc_images.empty();
+                if (data.images.length === 0) {
+                    bc_images.hide();
+                }
+                else {
+                    for (var i = 0; i < data.images.length; i++) {
+                        bc_images.append("<img class='img-thumbnail' src='" + data.images[i][0] + "' height='200' width='200'><br>");
+                    }
+                    bc_images.show();
+                }
+
+                $('#entra').attr('href', data.id);
+
+                bc_dialog.dialog({
+                    autoOpen: false,
+                    width: 'auto',
+                    height: 'auto',
+                    modal: true,
+                    title: "",
+                    show: {
+                        effect: "drop",
+                        direction: 'up',
+                    },
+                    open: function (event, ui) {
+                        $(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
+                        $('.ui-widget-overlay').bind('click', function () {
+                            bc_dialog.dialog('close');
+                        });
+                    },
+                    close: function (event, ui) {
+                        $('#bc_images_info').empty();
+                    },
+                });
+            }
+
+            $('.bc-entry').click(function () {
+                let selected_id = this.firstChild.id;
+
+                for (let i = 0; i < markers.length; ++i) {
+                    if (markers[i].id == selected_id) {
+                        $.each(bbcc, function (index, bc) {
+                            if (bc.id == selected_id) {
+                                data = bc;
+                                return false;
+                            }
+                        });
+
+                        fill_bc_dialog(data);
+
+                        if (markers[i].icon.url === loc) {
+                            markers[i].setIcon({
+                                url: loc_on,
+                                scaledSize: new google.maps.Size(markers_size, markers_size),
+                            });
+                        } else if (markers[i].icon.url === loc_3d) {
+                            markers[i].setIcon({
+                                url: loc_3d_on,
+                                scaledSize: new google.maps.Size(markers_size, markers_size),
+                            });
+                        }
+
+
+                        bc_dialog.on('dialogclose', function () {
+                            switch_off_marker(markers[i]);
+                        });
+
+                        break;
+                    }
+                }
+                bc_dialog.dialog("open");
+            });
+
+            $(document).ready(function () {
+                let trigger = $('.hamburger'),
+                    overlay = $('.overlay'),
+                    isClosed = false;
+
+                function hamburger_cross() {
+                    if (isClosed == true) {
+                        overlay.hide();
+                        trigger.removeClass('is-open');
+                        trigger.addClass('is-closed');
+                        isClosed = false;
+                    } else {
+                        overlay.show();
+                        trigger.removeClass('is-closed');
+                        trigger.addClass('is-open');
+                        isClosed = true;
+                    }
+                }
+
+                trigger.click(function () {
+                    hamburger_cross();
+                });
+
+
+                $('[data-toggle="offcanvas"]').click(function () {
+                    $('#wrapper').toggleClass('toggled');
+                });
+
+                $('.bc-entry').click(function () {
+                    $('#wrapper').toggleClass('toggled');
+                });
+            });
+        </script>
+    {% endspaceless %}
+{% endblock %}

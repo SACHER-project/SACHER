@@ -1,0 +1,86 @@
+/*
+* NAVBAR
+*/
+
+.navbar {
+    color: #ffffff;
+    background-color: #95613a;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: #ffffff;
+    background-color: #95613a;
+}
+
+.navbar-light .navbar-brand, .navbar-brand a {
+    color: #ffffff;
+    background: #95613a;
+    text-decoration: none;
+}
+
+/*
+* FINE NAVBAR
+*/
+
+body {
+    padding-top: 64px;
+}
+
+/*
+* MODAL LOGIN
+*/
+
+.m-header {
+    margin: 1.5rem;
+}
+
+.modal-title {
+    font-size: 42px;
+    color: #95613a;
+}
+
+.modal-body {
+    background-color: #d6feff;
+    color: #95613a;
+    padding-top: 1.5rem;
+}
+
+.modal-body p input {
+    background-color: transparent;
+    color: #95613a;
+    border: none;
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border-bottom: solid #95613a 2px;
+}
+
+.modal-body div button {
+    color: #95613a;
+    border-radius: 40px;
+    display: block;
+    font-size: 16px;
+    margin: 0 auto;
+    padding: 12px 18px;
+    margin-right: .5rem;
+    /*margin-top: 2.5rem;*/
+    margin-bottom: 2.5rem;
+    text-shadow: none;
+    transition: all .5s ease 0s;
+}
+
+.modal-body div button.entra {
+    background: #fdfc5f;
+    border: 1px solid #fdfc5f;
+}
+
+.modal-body div button.recupera {
+    background: #e7cfb6;
+    border: 1px solid #e7cfb6;
+}
+
+.modal-body div button.recupera > a {
+    text-decoration: none;
+    text-shadow: none;
+    color: #95613a;
+}

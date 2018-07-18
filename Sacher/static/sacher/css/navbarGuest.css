@@ -1,0 +1,199 @@
+/*
+* NAVBAR
+*/
+
+.navbar {
+    color: #95613a;
+    /*background-color: #ffffff;*/
+}
+
+.navbar-light .navbar-nav .nav-link, .navbar-light .navbar-nav .show > .nav-link {
+    color: #95613a;
+    /*background: #ffffff;*/
+}
+
+.navbar-light .navbar-brand, .navbar-brand a {
+    color: #95613a;
+    text-decoration: none;
+    /*background: #ffffff;*/
+}
+
+/*
+* FINE NAVBAR
+*/
+
+body {
+    padding-top: 64px;
+}
+
+/*
+* MODAL LOGIN
+*/
+
+.m-header {
+    margin: 1.5rem;
+}
+
+.modal-title {
+    font-size: 42px;
+    color: #95613a;
+}
+
+.modal-body {
+    background-color: #d6feff;
+    color: #95613a;
+    padding-top: 1.5rem;
+    text-align: center !important;
+}
+
+.modal-body p input {
+    background-color: transparent;
+    color: #95613a;
+    border: none;
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border-bottom: solid #95613a 2px;
+}
+
+.modal-body div button {
+    color: #95613a;
+    border-radius: 40px;
+    display: block;
+    font-size: 16px;
+    margin: 0 auto;
+    padding: 12px 18px;
+    margin-right: .5rem;
+    /*margin-top: 2.5rem;*/
+    margin-bottom: 2.5rem;
+    text-shadow: none;
+    transition: all .5s ease 0s;
+}
+
+.modal-body div button.entra {
+    background: #fdfc5f;
+    border: 1px solid #fdfc5f;
+}
+
+.modal-body div button.recupera {
+    background: #e7cfb6;
+    border: 1px solid #e7cfb6;
+}
+
+.modal-body div button.recupera > a {
+    text-decoration: none;
+    text-shadow: none;
+    color: #95613a;
+}
+
+form.form-forget-pass{
+  color: #95613a;
+  margin: 0 auto;
+  width:400px;
+  padding: 12px 42px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-shadow: none;
+  text-align: center;
+}
+
+/*Forget password*/
+h3#forgot-password{
+  padding-top: 3em;
+  color: #95613a;
+  text-align: center;
+  margin: 0 auto;
+  width:400px;
+}
+
+button[type="submit"],div.container>button[type="button"], button#download-op, #add_elem_form button[type="button"], #edit_elem_form button[type="button"], button#esci, button#det_esci {
+  color: #95613a;
+  border-radius: 40px;
+  display: block;
+  font-size: 16px;
+  margin: 0 auto;
+  padding: 12px 42px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-shadow: none;
+  transition: all .5s ease 0s;
+  background: #fdfc5f;
+  border: 1px solid #fdfc5f;
+}
+
+div.container>button[type="button"], #add_elem_form button[type="button"], #edit_elem_form button[type="button"], td button#esci, button#det_esci{
+  background: #e7cfb6;
+  border: 1px solid #e7cfb6;
+ }
+
+button#download-op{
+  background: #e7e7e7;
+  border: 1px solid #e7e7e7;
+}
+
+.files{
+  border: 1px solid #95613a;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin: 0 auto;
+}
+#hr-image{display: block;
+    height: 1px;
+    width: 30%;
+    border: 0;
+    border-top: 1px solid #95613a;
+    margin: 1em 0;
+    padding: 0;
+    margin: 0 auto;
+}
+
+#uploadedFiles{padding: 1.5em .1em;}
+
+td#modgrp{margin: 0 auto; text-align: center;}
+
+input#nuovo-spot{margin: 0 auto; margin-bottom: .5rem;}
+
+input[type="file"]{display: none}
+
+input[name="responsabile"],input[name="data_inizio"],input[name="data_fine"],input[name="ambito"],input[name="attivita"],input[name="elemento"],input[name="tag"],textarea[name="descrizione"]{
+width: 70%;
+background-color: #d6feff;
+color: #95613a;
+border: 1px solid #d6feff;
+margin: .5em;
+}
+
+img.img-thumbnail{
+width: 70%;
+}
+
+#titolo{
+    background-color: transparent;
+    color: #95613a;
+    border: none;
+    border-bottom-width: medium;
+    border-bottom-style: none;
+    border-top-color: currentcolor;
+    border-right-color: currentcolor;
+    border-bottom-color: currentcolor;
+    border-left-color: currentcolor;
+    width: 70%;
+    padding-bottom: .3em;
+    border-color: transparent;
+    border-bottom-color: transparent;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border-bottom: solid #95613a 2px;
+}
+
+form#add_elem_form,form#add_model_form {
+  color: #95613a;
+}
+
+#pass-sent, .pass-info, #pass-reset{
+  padding-top: 3em;
+  color: #95613a;
+  text-align: center;
+  margin: 0 auto;
+}

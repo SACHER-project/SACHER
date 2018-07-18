@@ -1,0 +1,35 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}Aggiungi un elemento{% endblock %}
+{% block head_link %}
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function() {
+            $("#id_data_inizio").datepicker({
+                dateFormat: "dd/mm/yy"
+            });
+            $("#id_data_fine").datepicker({
+                dateFormat: "dd/mm/yy"
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block h1title %}
+    {% if bc %}
+        Aggiungi un elemento al bene culturale "{{ bc.nome }}"
+    {% elif elemento %}
+        Aggiungi un elemento al bene culturale "{{ bc.nome }}"
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+        <table>
+	    {{ form.as_table }}
+        </table>
+	<input type="submit" value="Aggiungi">
+</form>
+{% endblock %}

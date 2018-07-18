@@ -1,0 +1,1261 @@
+{% load static %}
+{% load expr %}
+{% load spot_colors_tag %}
+{% load i18n %}
+<link type="text/css" rel="stylesheet" href="{% static 'sacher/css/3dhop.css' %}"/>
+
+
+<div id="3dhop-widget">
+    <link type="text/css" rel="stylesheet" href="{% static 'sacher/3dhop_static/stylesheet/3dhop.css' %}"/>
+    <!--SPIDERGL-->
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/spidergl.js' %}"></script>
+    <!--PRESENTER-->
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/presenter.js' %}"></script>
+    <!--3D MODELS LOADING AND RENDERING-->
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/nexus.js' %}"></script>
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/ply.js' %}"></script>
+    <!--TRACKBALLS-->
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/trackball_turntable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/trackball_turntable_pan.js' %}"></script>
+    {#    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/trackball_pantilt.js' %}"></script>#}
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/trackball_sphere.js' %}"></script>
+    <!--UTILITY-->
+    <script type="text/javascript" src="{% static 'sacher/3dhop_static/js/init.js' %}"></script>
+    {% if user.is_authenticated %}
+        {#                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>#}
+        <script src="{% static 'sacher/vendor/jquery.form.min.js' %}"></script>
+        <script src="{% static 'sacher/vendor/exif-js/exif.js' %}" async></script>
+    {% endif %}
+    <!--MATH-->
+    {#    <script language="JavaScript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.4/math.min.js"></script>#}
+
+    <!-- Dialog stuff -->
+    <div id="3dhop-container" style="height:{{ height|default:"840px" }}; width:{{ width|default:"100%" }};">
+        <div id="3dhop" class="tdhop" onmousedown="if (event.preventDefault) event.preventDefault()">
+            <div id="tdhlg"></div>
+            <div id="toolbar">
+                <!--FULLSCREEN-->
+                <img id="full_on" title="Exit Full Screen"
+                     src="{% static 'sacher/3dhop_static/skins/custom/full_on.png' %}"
+                     style="position:absolute; visibility:hidden;"/>
+                <img id="full" title="Full Screen" src="{% static 'sacher/3dhop_static/skins/custom/full.png' %}"/><br>
+                <!--HOME-->
+                <img id="home" title="Home" src="{% static 'sacher/3dhop_static/skins/custom/home.png' %}"/><br>
+                <!--ZOOM-->
+                <img id="zoomin" title="Zoom In" src="{% static 'sacher/3dhop_static/skins/custom/zoomin.png' %}"/><br>
+                <img id="zoomout" title="Zoom Out" src="{% static 'sacher/3dhop_static/skins/custom/zoomout.png' %}"/><br>
+                {#            TODO inserisci pan e rotate#}
+                <!--PROJECTIONS-->
+                <img id="ortho_projection" title="Orthographic projection" src="{% static 'sacher/3dhop_static/skins/custom/ortogonale_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                <img id="persp_projection" title="Perspective projection" src="{% static 'sacher/3dhop_static/skins/custom/prospettiva_on.png' %}"/><br>
+                <!--COLOR-->
+                <img id="color_on" title="Model color" src="{% static 'sacher/3dhop_static/skins/custom/color.png' %}" style="position:absolute; visibility:hidden;"/>
+                <img id="color" title="Solid color" src="{% static 'sacher/3dhop_static/skins/custom/color_on.png' %}"/><br>
+                <!--LIGHT-->
+                <img id="light_on" title="Disable Light Control" src="{% static 'sacher/3dhop_static/skins/custom/light_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                <img id="light" title="Enable Light Control"
+                     src="{% static 'sacher/3dhop_static/skins/custom/light.png' %}"/><br>
+                {#                todo tasto info?''????#}
+                <!--SECTIONS-->
+                <img id="sections_on" title="Disable Plane Sections" src="{% static 'sacher/3dhop_static/skins/custom/sections_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                <img id="sections" title="Enable Plane Sections" src="{% static 'sacher/3dhop_static/skins/custom/sections.png' %}"/><br>
+                <!--MEASURE-->
+                <img id="measure_on" title="Disable Measure Tool" src="{% static 'sacher/3dhop_static/skins/custom/measure_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                <img id="measure" title="Enable Measure Tool" src="{% static 'sacher/3dhop_static/skins/custom/measure.png' %}"/><br>
+                {% if params.with_spots and user.is_authenticated %}
+                    <!--HOTSPOT-->
+                    <img id="hotspot_on" title="Hide Hotspots" src="{% static 'sacher/3dhop_static/skins/custom/pin_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                    <img id="hotspot" title="Show Hotspots" src="{% static 'sacher/3dhop_static/skins/custom/pin.png' %}"/><br>
+                {% endif %}
+                <!--MODEL YEARS-->
+                <img id="model_year_on" title="Disable Model Year" src="{% static 'sacher/3dhop_static/skins/custom/model_year_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                <img id="model_year" title="Model Year" src="{% static 'sacher/3dhop_static/skins/custom/model_year.png' %}"/><br>
+
+                {% if user.is_authenticated %}
+                    {% if sacher_perms >= 4 or group == 'ente' %}
+                        <!--SET HOME VIEW-->
+                        <img id="set_home_view" title="Set Home View" src="{% static 'sacher/3dhop_static/skins/custom/setview.png' %}"/><br>
+                    {% endif %}
+                    {% if sacher_perms >= 3 or group == 'ente' %}
+                        <!--AGGIUNGI OPERAZIONE-->
+                        <img id="add_op_on" title="Disable Add New Operation" src="{% static 'sacher/3dhop_static/skins/custom/new_op_on.png' %}" style="position:absolute; visibility:hidden;"/>
+                        <img id="add_op" title="Add New Operation" src="{% static 'sacher/3dhop_static/skins/custom/new_op.png' %}" style="right: 200px;"/><br>
+                    {% endif %}
+                {% endif %}
+                {% if params.operazione and user.is_authenticated %}
+                    <!--POINT PICKING-->
+                    <img id="pick" title="Enable PickPoint Mode" src="{% static 'sacher/3dhop_static/skins/custom/pick.png' %}"/><br>
+                {% endif %}
+                {#                <img id="pick" title="Enable PickPoint Mode" src="{% static 'sacher/3dhop_static/skins/custom/pick.png' %}" style="display: none;"/><br>#}
+            </div>
+
+            <!--MEASURE-->
+            <div id="measure-box" class="output-box">Measured length
+                <hr/>
+                <span id="measure-output" class="output-text" onmousedown="event.stopPropagation()">0.0</span>
+            </div>
+
+            <!--POINT PICKING-->
+            <div id="pickpoint-box" class="output-box">XYZ picked point
+                <hr/>
+                <span id="pickpoint-output" class="output-text" onmousedown="event.stopPropagation()">[ 0 , 0 , 0 ]</span>
+            </div>
+
+            <!--SECTIONS-->
+            <div id="sections-box" class="output-box">
+                <table class="output-table" onmousedown="event.stopPropagation()">
+                    <tr>
+                        <td>Plane</td>
+                        <td>Position</td>
+                        <td>Flip</td>
+                    </tr>
+                    <tr>
+                        <td><img id="xplane_on" title="Disable X Axis Section" src="{% static 'sacher/3dhop_static/skins/icons/sectionX_on.png' %}" onclick="sectionxSwitch()"
+                                 style="position:absolute; visibility:hidden; border:1px inset;"/>
+                            <img id="xplane" title="Enable X Axis Section" src="{% static 'sacher/3dhop_static/skins/icons/sectionX.png' %}" onclick="sectionxSwitch()"/><br></td>
+                        <td><input id="xplaneSlider" class="output-input" type="range" title="Move X Axis Section Position"/></td>
+                        <td><input id="xplaneFlip" class="output-input" type="checkbox" title="Flip X Axis Section Direction"/></td>
+                    </tr>
+                    <tr>
+                        <td><img id="yplane_on" title="Disable Y Axis Section" src="{% static 'sacher/3dhop_static/skins/icons/sectionY_on.png' %}" onclick="sectionySwitch()"
+                                 style="position:absolute; visibility:hidden; border:1px inset;"/>
+                            <img id="yplane" title="Enable Y Axis Section" src="{% static 'sacher/3dhop_static/skins/icons/sectionY.png' %}" onclick="sectionySwitch()"/><br></td>
+                        <td><input id="yplaneSlider" class="output-input" type="range" title="Move Y Axis Section Position"/></td>
+                        <td><input id="yplaneFlip" class="output-input" type="checkbox" title="Flip Y Axis Section Direction"/></td>
+                    </tr>
+                    <tr>
+                        <td><img id="zplane_on" title="Disable Z Axis Section" src="{% static 'sacher/3dhop_static/skins/icons/sectionZ_on.png' %}" onclick="sectionzSwitch()"
+                                 style="position:absolute; visibility:hidden; border:1px inset;"/>
+                            <img id="zplane" title="Enable Z Axis Section" src="{% static 'sacher/3dhop_static/skins/icons/sectionZ.png' %}" onclick="sectionzSwitch()"/><br></td>
+                        <td><input id="zplaneSlider" class="output-input" type="range" title="Move Y Axis Section Position"/></td>
+                        <td><input id="zplaneFlip" class="output-input" type="checkbox" title="Flip Z Axis Section Direction"/></td>
+                    </tr>
+                </table>
+
+                <table class="output-table" onmousedown="event.stopPropagation()" style="align-content:right;">
+                    <tr>
+                        <td><label><input id="showPlane" class="output-input" type="checkbox" title="Show Section Planes" style="margin-bottom:0; display: inline;"/>Show planes</label></td>
+                        <td><label><input id="showBorder" class="output-input" type="checkbox" title="Show Section Edges" style="margin-bottom:0; display: inline;"/>Show edges</label></td>
+                    </tr>
+                </table>
+            </div>
+
+            {#<canvas id="draw-canvas" style="background-image: url({% static 'sacher/3dhop_static/skins/backgrounds/light.jpg' %})"/>#}
+            <canvas id="draw-canvas" style="background-color: #cccccc;"/>
+        </div>
+
+    </div>
+    {% if user.is_authenticated %}
+
+        <!-- Spot editing dialog -->
+        <div id="dialog-form" title="Info riferimento 3D" style="display:none; color: #95613a;">
+            <div id="spot_coordinate"></div>
+            <form method='post'>{% csrf_token %}
+                <fieldset>
+                    {#                <label for="spot_id">ID Spot:</label>#}
+                    {#                <input type="text" name="id_spot" id="spot_id" value="" class="text ui-widget-content ui-corner-all" readonly>#}
+                    {#                <label for="spot_operazione_id">ID Operazione:</label>#}
+                    {#                <input type="text" name="id_operazione" id="spot_operazione_id" value="{{ operazione.id }}" class="text ui-widget-content ui-corner-all" readonly>#}
+                    <label for="spot_name">Nome:</label>
+                    <input type="text" name="name" id="spot_name" value="" class="text ui-widget-content ui-corner-all">
+                    <label for="spot_descrizione">Descrizione:</label>
+                    {#                <input type="text" name="descrizione" id="spot_descrizione" value="" class="text ui-widget-content ui-corner-all">#}
+                    <textarea name="descrizione" id="spot_descrizione" class="text ui-widget-content ui-corner-all"></textarea>
+                    <label for="spot_scala">Dimensione Spot:</label>
+                    <div id="spot_scala" style="width: 90%;">
+                        <div id="custom-handle" class="ui-slider-handle"></div>
+                    </div>
+                    <br>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <!-- Operation create preview dialog -->
+        <div id="operation-preview-dialog-form" title="Aggiungi operazione" style="display:none;">
+            <form method='post'>{% csrf_token %}
+                <fieldset>
+                    <label for="op_elem">Elemento:</label>
+                    {#                <input type="text" name="op_elem" class="text ui-widget-content ui-corner-all" readonly>#}
+                    <select class="form-control" id="op_elem" name="op_elem"></select>
+                    <label for="op_attivita">Attività:</label>
+                    <select class="form-control" id="op_attivita" name="op_attivita" autocomplete="off"></select>
+                    <label for="op_ambito_0">Ambito:</label>
+                    <select class="form-control" id="op_ambito_0" name="op_ambito_0" autocomplete="off"></select>
+                    <select class="form-control" id="op_ambito_1" name="op_ambito_1" autocomplete="off" style="display: none; position: relative;"></select>
+                    <select class="form-control" id="op_ambito_2" name="op_ambito_2" autocomplete="off" style="display: none;"></select>
+                    <select class="form-control" id="op_ambito_3" name="op_ambito_3" autocomplete="off" style="display: none;"></select>
+                    <select class="form-control" id="op_ambito_4" name="op_ambito_4" autocomplete="off" style="display: none;"></select>
+                    <label for="op_attivita">Attività:</label>
+                    <select class="form-control" id="op_attivita" name="op_attivita" autocomplete="off"></select>
+                    <br>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <!-- Operation full dialog -->
+        <div id="operation-full-dialog-form" style="display:none;">
+            <form id="uploadImages" enctype="multipart/form-data" method="post" {% comment %}action="javascript:SaveFullOperation()"{% endcomment %}
+                  action="{% url 'sacher:save_op' %}">{% csrf_token %}
+                <table width="100%">
+                    <tr>
+                        <td id="modgrp">
+                            <input type="text" name="titolo" id="titolo" placeholder="Titolo">
+                            {% if sacher_perms >= 3 or user.groups.all.0.name == 'ente' %}
+                                <div id="uploadedFiles">
+                                  <label for="files" style="color: #95613a;" class="files">
+                                      <i class="fa fa-cloud-upload" style="color: #95613a;"></i> Allega immagini
+                                  </label>
+                                  <input type="file" id="files" name="files" multiple
+                                         accept=".rtf,image/jpeg, image/tiff, image/png, text/plain, application/pdf,application/msword, application/zip, application/vnd.ms-excel, application/vnd.ms-powerpoint"
+                                         style="color:transparent;">
+                                  <br>
+                                </div>
+                            {% endif %}
+
+                            {% if sacher_perms >= 3 or user.groups.all.0.name == 'ente' %}
+                                <input type="image" id="nuovo-spot" src="{% static 'sacher/3dhop_static/skins/custom/pin.png' %}" width="50px">
+                                <hr id="hr-image">
+                                <br>
+                            {% endif %}
+                            {% if sacher_perms >= 2 or user.groups.all.0.name == 'ente' %}
+                                <button type="button" id="download-op" onclick="DownloadOperazione()">PDF</button>
+                            {% endif %}
+                            {% if sacher_perms >= 3 or user.groups.all.0.name == 'ente' %}
+                                <button type="submit" id="salva">SALVA</button>
+                            {% endif %}
+                            <button type="button" id="esci" onClick="$('#operation-full-dialog-form').dialog('close');">ESCI</button>
+                        </td>
+                        <td>
+                            <div class="well well-sm pre-scrollable" style="max-height:550px;">
+                                <samp id="containerLog" class="scroll-pane">
+                                    {#<select name="responsabile" id="responsabile" required></select>#}
+                                    <input type="text" name="responsabile" id="responsabile" readonly>
+                                    <input type="text" name="data_inizio" placeholder="Data Inizio*" required>
+                                    <input type="text" name="data_fine" placeholder="Data Fine*" required>
+                                    <input type="text" placeholder="Ambito*" name="ambito" readonly>
+                                    <input type="text" placeholder="Attività*" name="attivita" readonly>
+                                    <input type="text" placeholder="Elemento*" name="elemento" readonly>
+                                    <textarea id="op_full_descrizione" name="descrizione" placeholder="Descrizione" required></textarea>
+                                    <input type="text" placeholder="Tag" name="tag">
+
+                                    <div id="storedFiles"></div>
+                                    <div id="selectedFiles"></div>
+                                </samp>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+
+        <div id="dialog-model-years" style="display:none;">
+            {% for model in elemento.modello3d_set.all|dictsortreversed:"anno" %}
+                {% if params.modello3d.id != model.id %}
+                    <a href="{% url 'sacher:elemento_detail_anno' elemento.id model.anno model.id %}">{{ model.anno }}</a>
+                {% else %}
+                    <b>{{ model.anno }}</b>
+                {% endif %}
+                {#            - <a href="{% url 'sacher:delete_model' model.id %}">Elimina</a><br>#}
+                {% if sacher_perms >= 4 or group == 'ente' %}
+                    - <a class='delete-mod3d' name="{{ model.id }}" href='#'>Elimina</a>
+                {% endif %}
+                <br>
+            {% empty %}
+                <a>{{ params.children.0.anno }}</a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script type="text/javascript">
+        // 3dhop stuff
+        let get_ref_command = 'get_ref3d';
+        let delete_ref_command = 'delete_ref3d';
+        var update_ref_command = 'update_ref3d';
+        var create_ref_command = 'create_ref3d';
+        var last_command = null;
+
+        var presenter = null;
+        var viewerScene = {};
+
+        var presenterCallbackHolder = {};
+        var current_spot_data = {};
+        var current_spot_3dhop_data = {};
+        let current_op_data = {};
+        var last_home_view_matrix = null;
+
+        let var_operazione = null;
+        let handle = $("#custom-handle");
+        let slider = $("#spot_scala");
+        var scene = {};
+        var storedFiles = [];
+
+        function setup3dhop() {
+            presenter = new Presenter("draw-canvas");
+            scene = {
+                meshes: {
+                    "sphere": {url: "{% static 'sacher/3dhop_static/models/sphere.ply' %}"},
+                    {% if params.modello3d %}
+                        "mesh_1": {url: "{% url 'sacher:range_download' modello3d_pk=params.modello3d.id filename='file.nxs'%}"},
+                    {% elif params.children %}
+                        {% for e in params.children %}
+                            "mesh_{{ forloop.counter }}": {url: "{% url 'sacher:range_download' modello3d_pk=e.id filename='file.nxs'%}"},
+                        {% endfor %}
+                    {% endif %}
+                },
+                modelInstances: {
+                    {% if params.modello3d %}
+                        "model_1": {
+                            mesh: "mesh_1",
+                            {#                            {% if params.modello3d.vista_iniziale %}#}
+                            {#                                transform: {matrix: {{ params.modello3d.vista_iniziale }}}#}
+                            {#                            {% endif %}#}
+                        },
+                    {% elif params.children %}
+                        {% for c in params.children %}
+                            "model_{{ forloop.counter }}": {
+                                mesh: "mesh_{{ forloop.counter }}",
+                                {#                                la composozione dei modelli dei figli non deve tenere conto delle viste iniziali#}
+                                {#                                {% if c.vista_iniziale %}#}
+                                {#                                    transform: { matrix: {{ c.vista_iniziale }} }#}
+                                {#                                {% endif %}#}
+                            },
+                        {% endfor %}
+                    {% endif %}
+                },
+                spots: {
+                    {% if params.with_spots and user.is_authenticated %}
+                        {#                con ref3d_set.all capisce che c'è una relazione (1,N) tra le due entita e fa in automatico una "query"#}
+                        {% if params.operazione.ref3d_set.all %}
+                            {% for ref in params.operazione.ref3d_set.all %}
+                                "{{ ref.id }}": {
+                                    mesh: "sphere",
+                                    transform: {
+                                        {#                                        {% if params.modello3d.vista_iniziale %}#}
+                                        {#                                            matrix: SglMat4.mul({{ params.modello3d.vista_iniziale }},#}
+                                        {#                                                SglMat4.mul(SglMat4.translation([{{ ref.x }}, {{ ref.y }}, {{ ref.z }}]), SglMat4.scaling([{{ ref.scale }}, {{ ref.scale }}, {{ ref.scale }}]))),#}
+                                        {#                                        {% else %}#}
+                                        translation: [{{ ref.x }}, {{ ref.y }}, {{ ref.z }}],
+                                        rotation: [0, 0, 0],
+                                        scale: [{{ ref.scale }}, {{ ref.scale }}, {{ ref.scale }}]
+                                        {#                                        {% endif %}#}
+                                    },
+                                    {% if params.operazione.ambito.colore %}
+                                        {% expr params.operazione.ambito.colore.to_float() as color_f %}
+                                        color: {{ color_f }},
+                                    {% else %}
+                                        color: [0.0, 0.25, 1.0],
+                                    {% endif %}
+                                    alpha: 0.5
+                                },
+                            {% endfor %}
+                        {% elif params.operazioni %}
+                            {% for op in params.operazioni %}
+                                {% for ref in op.ref3d_set.all %}
+                                    "{{ ref.id }}": {
+                                        mesh: "sphere",
+                                        transform: {
+                                            {#                                            {% if params.modello3d.vista_iniziale %}#}
+                                            {#                                                matrix: SglMat4.mul({{ params.modello3d.vista_iniziale }},#}
+                                            {#                                                    SglMat4.mul(SglMat4.translation([{{ ref.x }}, {{ ref.y }}, {{ ref.z }}]), SglMat4.scaling([{{ ref.scale }}, {{ ref.scale }}, {{ ref.scale }}]))),#}
+                                            {#                                            {% else %}#}
+                                            translation: [{{ ref.x }}, {{ ref.y }}, {{ ref.z }}],
+                                            rotation: [0, 0, 0],
+                                            scale: [{{ ref.scale }}, {{ ref.scale }}, {{ ref.scale }}]
+                                            {#                                            {% endif %}#}
+                                        },
+                                        {% if op.ambito.colore %}
+                                            {% expr op.ambito.colore.to_float() as color_f %}
+                                            color: {{ color_f }},
+                                        {% else %}
+                                            color: [0.0, 0.25, 1.0],
+                                        {% endif %}
+                                        alpha: 0.5
+                                    },
+                                {% endfor %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                },
+                trackball: {
+                    type: SphereTrackball,
+                },
+                /*trackball: {
+                    type : TurntablePanTrackball,
+                    trackOptions : {
+                        startPhi: 35.0,
+                        startTheta: 15.0,
+                        startDistance: 2.5,
+                        minMaxPhi: [-180, 180],
+                        minMaxTheta: [-30.0, 70.0],
+                        minMaxDist: [0.5, 3.0]
+                    }
+                }*/
+                space: {
+                    cameraNearFar: [0.01, 5],
+                    centerMode: "scene",
+                    radiusMode: "scene",
+                }
+            };
+            presenter.setScene(scene);
+
+            presenter._onEndMeasurement = onEndMeasure;
+            presenter._onEndPickingPoint = onEndPick;
+            presenter._onPickedSpot = onPickedSpot;
+            sectiontoolInit();
+        }
+
+        function actionsToolbar(action) {
+            if (action === 'home') {
+                if (last_home_view_matrix != null) {
+                    presenter.setTrackballPosition(last_home_view_matrix);
+                }
+                else {
+                    {% if params.modello3d.vista_iniziale %}
+                        presenter.setTrackballPosition({{ params.modello3d.vista_iniziale }});
+                    {% else %}
+                        presenter.resetTrackball();
+                    {% endif %}
+                }
+            }
+            //--FULLSCREEN--
+            else if (action === 'full' || action === 'full_on') {
+                fullscreenSwitch('#3dhop-container', '{{ height|default:"700px" }}');
+                // Riposiziono il credit a 3DHOP
+                let h = $('#3dhop').parent().height();
+                $('#tdhlg').css('top', h - 26);
+            }
+            //--ZOOM--
+            else if (action === 'zoomin')
+                presenter.zoomIn();
+            else if (action === 'zoomout')
+                presenter.zoomOut();
+            //--LIGHT--
+            else if (action === 'light' || action === 'light_on') {
+                presenter.enableLightTrackball(!presenter.isLightTrackballEnabled());
+                lightSwitch();
+            }
+            //--PROJECTIONS--
+            else if (action === 'ortho_projection' || action === 'persp_projection') {
+                let bool = $('#ortho_projection').css("visibility");
+
+                if (bool === "visible") {
+                    $('#ortho_projection').css("visibility", "hidden");
+                    $('#persp_projection').css("visibility", "visible");
+                }
+                else {
+                    $('#ortho_projection').css("visibility", "visible");
+                    $('#persp_projection').css("visibility", "hidden");
+                }
+                presenter.toggleCameraType();
+            }
+            //--COLOR--
+            else if (action === 'color' || action === 'color_on') {
+                presenter.toggleInstanceSolidColor(HOP_ALL, true);
+                colorSwitch();
+            }
+            //--MEASURE--
+            else if (action === 'measure' || action === 'measure_on') {
+                presenter.enableMeasurementTool(!presenter.isMeasurementToolEnabled());
+                measureSwitch();
+            }
+                {% if params.operazione %}
+                    //--POINT PICKING--
+                    else if (action === 'pick' || action === 'pick_on') {
+                    activatePickPoint();
+                }
+                {% endif %}
+            //--SECTIONS--
+            else if (action === 'sections' || action === 'sections_on') {
+                sectiontoolReset();
+                sectiontoolSwitch();
+            }
+                {% if user.is_authenticated %}
+                    // --HOTSPOT--
+                    else if (action === 'hotspot' || action === 'hotspot_on') {
+                    presenter.toggleSpotVisibilityByName(HOP_ALL, true);
+
+                    let bool = $('#hotspot').css("visibility");
+
+                    if (bool == "visible") {
+                        $('#hotspot').css("visibility", "hidden");
+                        $('#hotspot_on').css("visibility", "visible");
+                    }
+                    else {
+                        $('#hotspot').css("visibility", "visible");
+                        $('#hotspot_on').css("visibility", "hidden");
+                    }
+                }
+                // SET HOME VIEW
+                else if (action === 'set_home_view') {
+                    if (confirm('Vuoi impostare questa vista come vista iniziale?')) {
+                        {#                    last_home_view_matrix = JSON.stringify(presenter.xform.model.matrix);#}
+                        {#                    last_home_view_matrix = JSON.stringify(presenter.getTrackballPosition());#}
+                        last_home_view_matrix = presenter.getTrackballPosition();
+                        setHomeView();
+                    }
+                }
+                // --OPERATION--
+                else if (action === 'add_op') {
+                    current_op_data = {};
+                    operation_preview_dialog.dialog('open');
+                }
+                //--MODEL YEAR--
+                else if (action === 'model_year' || action === 'model_year_on') {
+                    let bool = $('#model_year').css("visibility");
+
+                    if (bool == "visible") {
+                        $('#model_year').css("visibility", "hidden");
+                        $('#model_year_on').css("visibility", "visible");
+                    }
+                    else {
+                        $('#model_year').css("visibility", "visible");
+                        $('#model_year_on').css("visibility", "hidden");
+                    }
+
+                    open_model_dialog();
+                }
+                {% endif %}
+        }
+
+        function activatePickPoint() {
+            /*if(hotspotEnable) {
+                $('#hotspot').css('visibility', 'hidden');
+                //hotspotSwitch(false);
+                hotspotEnable = false;
+            }
+            else {
+                $('#hotspot').css('visibility', 'visible');
+                //hotspotSwitch(true);
+                hotspotEnable = true;
+            }*/
+
+            presenter.enablePickpointMode(!presenter.isPickpointModeEnabled());
+            pickpointSwitch();
+        }
+
+        function activateHotSpots() {
+            /*if(pickPointEnable) {
+                $('#pick').css('visibility', 'hidden');
+                //pickpointSwitch(false);
+                pickPointEnable = false;
+            }
+            else {
+                $('#pick').css('visibility', 'visible');
+                //pickpointSwitch(true);
+                pickPointEnable = true;
+            }*/
+            {#presenter.setSpotVisibility(HOP_ALL, true, true);#}
+            {#presenter.enableOnHover(!presenter.isOnHoverEnabled());#}
+            hotspotSwitch();
+        }
+
+        //--MEASURE--
+        function onEndMeasure(measure) {
+            // measure.toFixed(2) sets the number of decimals when displaying the measure
+            // depending on the model measure units, use "mm","m","km" or whatever you have
+            $('#measure-output').html(measure.toFixed(2) + " m");
+        }
+
+        //--PICKPOINT--
+        function onEndPick(point) {
+            // .toFixed(2) sets the number of decimals when displaying the picked point
+            var x = point[0].toFixed(2);
+            var y = point[1].toFixed(2);
+            var z = point[2].toFixed(2);
+            var coord_string = "[ " + x + " , " + y + " , " + z + " ]";
+
+            $('#pickpoint-output').html(coord_string);
+
+            if (confirm('Vuoi creare uno spot alle coordinate: ' + coord_string + '?')) {
+                createSpot(x, y, z);
+            }
+        }
+
+        function onPickedSpot(id) {
+            current_spot_3dhop_data = presenter._scene.spots[id];
+            spotRESTCall(get_ref_command, id);
+        }
+
+        function open_model_dialog() {
+
+            var model_years_dialog = $("#dialog-model-years").dialog({
+                autoOpen: false,
+                height: 'auto',
+                width: 'auto',
+                modal: true,
+                title: 'Modelli 3D',
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $('.ui-widget-overlay').bind('click', function () {
+                        model_years_dialog.dialog('close');
+                    });
+                },
+                close: function (event, ui) {
+                    $('#model_year').css("visibility", "visible");
+                    $('#model_year_on').css("visibility", "hidden");
+                },
+            });
+
+            model_years_dialog.dialog('open');
+        }
+        {% if user.is_authenticated %}
+
+            function createSpot(x, y, z) {
+                current_spot_data = {};
+                current_spot_data['x'] = parseFloat(x);
+                current_spot_data['y'] = parseFloat(y);
+                current_spot_data['z'] = parseFloat(z);
+                current_spot_data['scale'] = 1;
+                {#current_spot_data['operazione'] = {% if params.operazione %}{{ params.operazione.id }}{% else %}''{% endif %};#}
+                current_spot_data['operazione'] = cur_op.id;
+                current_spot_data['nome'] = '<nome spot>';
+                current_spot_data['descrizione'] = '<descrizione spot>';
+
+                spotRESTCall(create_ref_command, '');
+            }
+
+            function onCreateCompleted(data) {
+                current_spot_data = data;
+
+                var id = current_spot_data['id'];
+                var x = current_spot_data['x'];
+                var y = current_spot_data['y'];
+                var z = current_spot_data['z'];
+
+                var scale = current_spot_data['scale'];
+                var newSpotData = {
+                    mesh: "sphere",
+                    transform: {
+                        translation: [x, y, z],
+                        scale: [scale, scale, scale]
+                    },
+                    {% if params.operazione %}
+                        {% expr params.operazione.ambito.colore.to_float() as color_f %}
+                        color: {{ color_f }},
+                    {% else %}
+                        color: [0, 0.25, 1],
+                    {% endif %}
+                    visible: true,
+                    alpha: 0.5
+                };
+
+                alert('Spot aggiunto correttamente.');
+
+                //activatePickPoint();
+                //activateHotSpots();
+
+                presenter.enablePickpointMode(!presenter.isPickpointModeEnabled());
+                pickpointSwitch();
+
+                var cur_spots = presenter._scene.spots;
+                cur_spots[id] = newSpotData;
+                presenter._scene.spots = presenter._parseSpots(cur_spots);
+
+                for (s in presenter._scene.spots) {
+                    presenter._scene.spots[s].rendermode = "FILL";
+                }
+                presenter.repaint();
+
+                onPickedSpot(id);
+            }
+
+            function openDialog() {
+                //dialog.removeClass('hide');
+                dialog.dialog('open');
+            }
+
+            function closeDialog() {
+                // Riapplico la scale giusta nel caso non si salvino le modifiche
+                const val = current_spot_data['scale'];
+                current_spot_3dhop_data.transform.scale = [val, val, val];
+                presenter._scene.spots[current_spot_data['id']] = presenter._parseSpot(current_spot_3dhop_data);
+                dialog.dialog('close');
+                presenter.repaint();
+            }
+
+            function onGetDataCompleted(data) {
+                current_spot_data = data;
+                $('#spot_id').val(current_spot_data['id']);
+                $('#spot_operazione_id').val(current_spot_data['operazione']);
+                $('#spot_name').val(current_spot_data['nome']);
+                $('#spot_descrizione').val(current_spot_data['descrizione']);
+                $('#spot_coordinate').html('Coordinate (m) <b>x</b> = ' + current_spot_data['x'] + ', <b>y</b> = ' + current_spot_data['y'] + ', <b>z</b> = ' + current_spot_data['z']);
+                slider.slider('value', current_spot_data['scale']);
+                handle.text(slider.slider("value"));
+                openDialog();
+            }
+
+            {% if sacher_perms >= 3 or user.groups.all.0.name == 'ente' %}
+                function onSalvaClicked() {
+                    if (confirm('Vuoi davvero aggiornare i dati dello spot?')) {
+                        // nome, descrizione, scala
+                        current_spot_data['nome'] = $('#spot_name').val();
+                        current_spot_data['descrizione'] = $('#spot_descrizione').val();
+                        current_spot_data['scale'] = slider.slider('value');
+                        spotRESTCall(update_ref_command, current_spot_data['id']);
+                    }
+                    else {
+                        closeDialog();
+                    }
+                }
+            {% endif %}
+
+            function onSalvaCompleted(data) {
+                alert('Dati dello spot salvati correttamente');
+                var spot_id = data['id'];
+                closeDialog();
+            }
+
+            {% if sacher_perms >= 3 or user.groups.all.0.name == 'ente' %}
+                function onEliminaClicked() {
+                    if (confirm('Vuoi davvero eliminare questo spot?'))
+                        spotRESTCall(delete_ref_command, current_spot_data['id']);
+                    else
+                        closeDialog();
+                }
+            {% endif %}
+
+            function onEliminaCompleted(data) {
+                delete presenter._scene.spots[current_spot_data['id']];
+                current_spot_data = {};
+                current_spot_3dhop_data = {};
+                dialog.dialog('close');
+                presenter.repaint();
+            }
+
+            function spotRESTCall(command, spot_id) {
+                last_command = command;
+                $.ajax({
+                    url: '/rest_api/' + command + '/' + spot_id,
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': "{{ csrf_token }}",
+                        'current_spot_data': JSON.stringify(current_spot_data),
+                    },
+                    success: function (data) {
+                        console.log("Spot REST Call success. Command: " + command);
+                        let status = data.status;
+                        data = JSON.parse(data.content);
+                        if (last_command === get_ref_command) {
+                            onGetDataCompleted(data);
+                        }
+                        else if (last_command === delete_ref_command) {
+                            onEliminaCompleted(data);
+                        }
+                        else if (last_command === update_ref_command) {
+                            onSalvaCompleted(data);
+                        }
+                        else if (last_command === create_ref_command) {
+                            if (status == 200) {
+                                window.stop();
+                                window.location.reload(true);
+                            }
+                            onCreateCompleted(data);
+                        }
+                        else {
+                            console.log('wtf');
+                        }
+                        //presenter.repaint();
+                    },
+                    {#                complete:function (){#}
+                    {#                    console.log("completato");#}
+                    {#                    presenter.setSpotVisibility(HOP_ALL, true, true);#}
+                    {#                },#}
+                    error: function (xhr, status, error) {
+                        console.log(xhr.error);
+                    },
+                });
+            }
+
+            {% if sacher_perms >= 4 or group == 'ente' %}
+                function setHomeView() {
+                    if (last_home_view_matrix !== null) {
+                        let models = [
+                            {% if params.modello3d %}
+                                {{ params.modello3d.id }}
+                            {% elif params.children %}
+                                {% for mod3d in params.children %}
+                                    {{ mod3d.id }}
+                                    {%if not forloop.last%},{%endif%}
+                                {% endfor %}
+                            {% endif %} ];
+                        let data = {
+                            'csrfmiddlewaretoken': "{{ csrf_token }}",
+                            'matrix': JSON.stringify(last_home_view_matrix),
+                            'models': JSON.stringify(models),
+                        };
+                        console.log(data);
+                        $.ajax({
+                            url: '{% url 'sacher:rest_set_home_view' %}',
+                            type: 'POST',
+                            data: data,
+                            dataType: 'json',
+                            success: function (data) {
+                                console.log('setHomeView REST Call success.');
+                            },
+                            error: function (xhr, ajaxOptions, thrownError) {
+                                alert("{% trans "An error occurred while sending a request." %}");
+                            },
+                        });
+                    }
+                    else {
+                        console.log('nessuna home view da aggiornare');
+                    }
+                }
+            {% endif %}
+            function clone(obj) {
+                return JSON.parse(JSON.stringify(obj));
+            }
+
+            function PopulateOperation() {
+                let select_ambito = $('select[name=op_ambito_0]');
+                let select_attivita = $('select[name=op_attivita]');
+                let select_elemento = $('select[name=op_elem]');
+                let current_element = null;
+
+                {% if elemento.id %}
+                    current_element = {{ elemento.id }};
+                {% endif %}
+                if (var_operazione != null) {
+                    select_ambito.append($('<option></option>').val("").html("---------"));
+                    $.each(var_operazione.ambiti, function () {
+                        const option = '<option value="' + this.id + '">' + this.nome + '</option>';
+                        select_ambito.append(option);
+                    });
+                    $.each(var_operazione.attivita, function () {
+                        const option = '<option id="' + this.id + '" value="' + this.nome + '">' + this.nome + '</option>';
+                        select_attivita.append(option);
+                    });
+
+                    $.each(var_operazione.elementi, function () {
+                        let option = '<option id="' + this.id + '" value="' + this.nome + '"';
+                        if (current_element != null && current_element == this.id) {
+                            option += " selected";
+                        }
+                        option += '>' + this.nome + '</option>';
+                        select_elemento.append(option);
+                    });
+                }
+            }
+
+            // dialog stuff
+            var dialog = $("#dialog-form").dialog({
+                appendTo: '#3dhop-container',
+                autoOpen: false,
+                height: 'auto',
+                width: 'auto',
+                modal: true,
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $('.ui-widget-overlay').bind('click', function () {
+                        closeDialog();
+                    });
+                },
+                buttons: {
+                    {% if sacher_perms >= 3 or user.groups.all.0.name == 'ente' %}
+                        "Salva": function () {
+                            onSalvaClicked();
+                        },
+                        "Elimina": function () {
+                            onEliminaClicked();
+                        },
+                    {% endif %}
+                    "Annulla": function () {
+                        closeDialog();
+                    }
+                }
+            });
+
+            // dialog stuff
+            let operation_preview_dialog = $("#operation-preview-dialog-form").dialog({
+                appendTo: '#3dhop-container',
+                autoOpen: false,
+                height: 'auto',
+                width: 'auto',
+                modal: true,
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $('.ui-widget-overlay').bind('click', function () {
+                        $("#operation-preview-dialog-form").dialog('close');
+                    });
+
+                },
+                close: function (event, ui) {
+                },
+                buttons: {
+                    "Crea": function () {
+                        let ambito = null;
+                        let selected = null;
+                        for (let i = 0; i < 5; i++) {
+                            let val = $('#op_ambito_' + i).children(":selected").val();
+                            if (val !== '' && val != null) {
+                                selected = $('#op_ambito_' + i).children(":selected");
+                                ambito = val;
+                            }
+                        }
+                        {#current_op_data['ambito'] = [$('#op_ambito_0').children(":selected").attr("id"), $('#op_ambito_0').val()];#}
+                        current_op_data['ambito'] = [$(selected).attr("value"), $(selected).text()];
+                        current_op_data['attivita'] = [$('#op_attivita').children(":selected").attr("id"), $('#op_attivita').val()];
+                        {#openCompleteOpDialog();#}
+                        AggiungiInfo();
+                        operation_preview_dialog.dialog('close');
+                    },
+                }
+            });
+
+            let operation_full_dialog = $("#operation-full-dialog-form").dialog({
+                appendTo: '#3dhop-container',
+                autoOpen: false,
+                height: dHeight,
+                width: dWidth,
+                maxHeight: dHeight,
+                maxWidth: dWidth,
+                position: {
+                    my: "center top",
+                    at: "center top+" + navbarHeight,
+                    of: window
+                },
+                modal: false,
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $('form#uploadImages').find(':input[type=submit]').prop('disabled', false);
+                    // Visualizzo tutti gli hotspot dell'operazione corrente
+                    toggleHotspots(cur_op, true);
+                },
+                close: function (event, ui) {
+                    $("input[name=data_inizio]").datepicker("hide");
+                    $("input[name=data_fine]").datepicker("hide");
+                    $('#selectedFiles').empty();
+                    $('#storedFiles').empty();
+                    $('#files').val("");
+                    toggleHotspots(cur_op, true);
+                },
+            });
+
+            function AggiungiInfo() {
+                // reset the form in dialog
+                operation_full_dialog.children(":first").get(0).reset();
+
+                // Completo i campi del secondo dialog
+
+                const ambito = $("input[name='ambito']");
+                const attivita = $("input[name='attivita']");
+                ambito.attr("id", current_op_data['ambito'][0]);
+                ambito.attr('value', current_op_data['ambito'][1]);
+                attivita.attr("id", current_op_data['attivita'][0]);
+                attivita.attr('value', current_op_data['attivita'][1]);
+                $('input[name=responsabile]').val("{{ request.user.username }}");
+
+                const elem = $('input[name=elemento]');
+                elem.attr('value', $('select[name=op_elem]').val());
+                elem.attr('id', $('select[name=op_elem]').id);
+
+                // Il campo titolo deve essere composizione di attivita, ambito e elemento
+                $("input[name='titolo']").attr('value', elem.val() + "_" + ambito.val() + "_" + attivita.val());
+                SetTodayDate();
+
+                cur_op = null;
+                $('#download-op').hide();
+                operation_full_dialog.dialog("open");
+            }
+
+            function SetTodayDate() {
+                var dateFormat = "yy-mm-dd";
+                var datepicker_format = {
+                    dateFormat: "yy-mm-dd",
+                    defaultDate: +0,
+                    firstDay: 1,
+                    changeMonth: true,
+                    numberOfMonths: 1,
+                    prevText: 'Prec',
+                    nextText: 'Succ',
+                    currentText: 'Oggi',
+                    monthNames: ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'],
+                    monthNamesShort: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
+                    dayNames: ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'],
+                    dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'],
+                    dayNamesMin: ['Do', 'Lu', 'Ma', 'Me', 'Gio', 'Ve', 'Sa'],
+                };
+                var from = $("input[name=data_inizio]").datepicker(datepicker_format).on("change", function () {
+                    to.datepicker("option", "minDate", getDate(this));
+                }).prop('readonly', false);
+                var to = $("input[name=data_fine]").datepicker(datepicker_format).on("change", function () {
+                    from.datepicker("option", "maxDate", getDate(this));
+                }).prop('readonly', false);
+
+                from.datepicker("setDate", new Date());
+                to.datepicker("setDate", new Date());
+
+                function getDate(element) {
+                    try {
+                        return $.datepicker.parseDate(dateFormat, element.value);
+                    } catch (error) {
+                        return null;
+                    }
+                }
+            }
+
+            $('#uploadImages').ajaxForm({
+                beforeSubmit: function (formData, formObject, formOptions) {
+                    formData.push(
+                        {name: 'elemento', value: "{{ elemento.id }}"},
+                        {name: 'ambito', value: $("input[name='ambito']").attr('id')},
+                        {name: 'attivita', value: $("input[name='attivita']").attr('id')},
+                    );
+                    if (cur_op != null) {
+                        formData.push(
+                            {name: 'op', value: cur_op.id},
+                        );
+                    }
+                },
+                success: function (data) {
+                    if (data.status === 200) {
+                        $(this).find(':input[type=submit]').prop('disabled', true);
+                        window.stop();
+                        window.location.reload(true);
+                    }
+                    console.log(data)
+                    $("#operation-full-dialog-form").dialog('close');
+                    cur_op = null;
+                }
+            });
+
+            function handleFileSelect(e) {
+                let files = e.target.files;
+                let filesArr = Array.prototype.slice.call(files);
+                removeFile();
+
+                var file = $('#selectedFiles');
+                file.empty();
+
+                file.append("<table id='img_toupload_table' width='100%'></table>");
+                var table = $('#img_toupload_table');
+                const interesting_tags = ['DateTimeOriginal', 'ApertureValue', 'Make', 'Model', 'DateTime', 'XResolution', 'YResolution',
+                    'ColorSpace', 'PixelYDimension', 'PixelXDimension', 'ExposureTime', 'FNumber', 'ISOSpeedRatings'];
+                var i = 0;
+
+                filesArr.forEach(function (f) {
+                    {#let add = true;#}
+                    {#$.each(storedFiles, function (index, value) {#}
+                    {#    if (value.name == f.name) {#}
+                    {#        add = false;#}
+                    {#    }#}
+                    {# });#}
+                    {#if (!add) {#}
+                    {#    console.log("File già presente");#}
+                    {#    return;#}
+                    {# }#}
+                    {#storedFiles.push(f);#}
+                    {#$('#uploadedFiles').append("<div>" + f.name + "</div>");#}
+                    {#var row = "<tr><td><img id='img_toupload_" + i + "' class='img-thumbnail' src='" + encodeURI(f) + "' height='200' width='200'></td>";#}
+
+                    {#if (!f.type.match("image.*")) {#}
+                    {#    return;#}
+                    {# }#}
+                    let reader = new FileReader();
+                    reader.onload = function (e) {
+                        {#let html = "<div><img src='" + e.target.result + "' class='selFile' title='Click to remove' style='width: 40px'>" + f.name + "<br clear='left'/></div>";#}
+                        {#let html = "<div><table id='" + f.name + "' class='img-thumbnail'><tr><td><img src='" + e.target.result + "' style='width: 200px;'></td>";#}
+                        var row = "<tr><td><img id='img_toupload_" + i + "' class='img-thumbnail' src='" + e.target.result + "' width='200'></td>";
+                        {#var row = "<tr><td><img id='img_toupload_" + i + "' class='img-thumbnail' src='" + e.target.result + "' style='width=200px;'></td>";#}
+
+                        row += "<td>Titolo: <strong>" + f.name + "</strong><br>";
+                        // Get the exif data
+                        EXIF.getData(f, function () {
+                            interesting_tags.forEach(function (t) {
+                                let s = $.trim(EXIF.getTag(f, t));
+                                if (s == "") {
+                                    s = '-';
+                                }
+                                row += t + ": <strong>" + s + "</strong>" + "<br>";
+                            });
+                            row += "</td></tr>";
+                            // Append all the tags into the div
+                            table.append(row);
+                        });
+                    };
+                    reader.readAsDataURL(f);
+                });
+            }
+
+            function removeFile() {
+                var file = $(this)[0].id;
+
+                {#$('#uploadedFiles').children('div').each(function () {#}
+                {#    if ($(this).text() === file) {#}
+                {#        $(this).remove();#}
+                {#    }#}
+                {# });#}
+
+                for (var i = 0; i < storedFiles.length; i++) {
+                    if (storedFiles[i].name === file) {
+                        storedFiles.splice(i, 1);
+                        //break;
+                    }
+                }
+                $(this).parent().remove();
+            }
+
+            $('#nuovo-spot').click(function (e) {
+                e.preventDefault();
+                operation_full_dialog.dialog('close');
+                activatePickPoint();
+            });
+
+            slider.slider({
+                min: 0.1,
+                max: 30.0,
+                step: 0.1,
+                create: function () {
+                    handle.text($(this).slider("value"));
+                },
+                slide: function (event, ui) {
+                    current_spot_3dhop_data.transform.scale = [ui.value, ui.value, ui.value];
+                    presenter._scene.spots[current_spot_data['id']] = presenter._parseSpot(current_spot_3dhop_data);
+                    handle.text(ui.value);
+                    presenter.repaint();
+                },
+            });
+
+            $('.delete-mod3d').click(function () {
+                if (confirm('Vuoi veramente cancellare il modello 3D selezionato?')) {
+                    var url = "{% url 'sacher:delete_model' 123 %}";
+                    var id = $(this).attr('name');
+                    // Construct the full URL with "id"
+                    document.location.href = url.replace('123', id);
+                }
+            });
+
+            function DownloadOperazione() {
+                let url = '{% url 'sacher:download_op' 123 %}';
+                // Construct the full URL with "id"
+                window.open(url.replace('123', cur_op.id), '_blank');
+            }
+
+
+            function get_ambito(data, select_to_populate) {
+                data['csrfmiddlewaretoken'] = "{{ csrf_token }}";
+                let select = $('#' + select_to_populate);
+                $.ajax({
+                    url: "{% url 'sacher:get_ambiti'%}",
+                    data: data,
+                    dataType: 'json',
+                    method: 'POST',
+                    async: false,
+                    success: function (data) {
+                        data = JSON.parse(data.content);
+                        if (jQuery.isEmptyObject(data)) {
+                            // Se vuoto disabilito il select qualificazione
+                            $('#' + select_to_populate).hide().empty();
+                        }
+                        else {
+                            $('#' + select_to_populate).show().empty();
+                        }
+                        $(select).append($('<option></option>').val("").html("---------"));
+                        $.each(data, function (i, data) {
+                            $(select).append(
+                                $('<option></option>').val(data.id).html(data.nome)
+                            )
+                        });
+                    }
+                });
+            }
+        {% endif %}
+
+        $(document).ready(function () {
+            const canvas = $('#3dhop').parent();
+            let w = canvas.width();
+            let h = canvas.height();
+            moveToolbar(w - 60, 10);
+            $('#toolbar').css('display', 'block');
+            init3dhop();
+            $('#tdhlg').css('left', w - 105);
+            $('#tdhlg').css('top', h - 26);
+            setup3dhop();
+            $('#sections-box').css('left', w - 285);
+            $('#measure-box').css('left', w - 180);
+
+            {% if params.modello3d.vista_iniziale %}
+                presenter.setTrackballPosition({{ params.modello3d.vista_iniziale }});
+            {% endif %}
+
+            {% if show_spots == "True" %}
+                activateHotSpots();
+            {% else %}
+                presenter.setSpotVisibility(HOP_ALL, false, true);
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                let data = {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    {% if bc %}
+                        'bc_id': '{{ bc.id }}',
+                    {% elif elemento.bene_culturale %}
+                        'bc_id': '{{ elemento.bene_culturale.id }}',
+                    {% endif %}
+                }
+                $.ajax({
+                    url: '{% url 'sacher:retrieve_op_info' %}',
+                    type: 'POST',
+                    data: data,
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.status === 200) {
+                            var_operazione = JSON.parse(data.content);
+                            console.log("ambiti e attività scaricati, popolo i select");
+                            PopulateOperation();
+                        }
+                        else {
+                            console.log("Errore: ambiti e attivita non recuperabili");
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert("{% trans "An error occurred while sending a request." %}");
+                    }
+                });
+
+                $("#files").on("change", handleFileSelect);
+                $("body").on("click", ".selFile", removeFile);
+
+                for (let i = 0; i < 4; i++) {
+                    $('#op_ambito_' + i).change(function () {
+                        let data = {
+                            'parent_id': $(this).val(),
+                            {% if bc %}
+                                'bc_id': {{ bc.id }},
+                            {% elif elemento.bene_culturale.id %}
+                                'bc_id': {{ elemento.bene_culturale.id }},
+                            {% endif %}
+                        };
+                        // Resetto tutti i figli
+                        let index = $(this).attr('name');
+                        index = index.replace('op_ambito_', '');
+                        for (let j = index + 1; j < 4; j++) {
+                            $('#op_ambito_' + j).empty();
+                        }
+                        if (data.parent_id !== '') {
+                            get_ambito(data, ('op_ambito_' + (i + 1)).toString());
+                        }
+                    });
+                }
+            {% endif %}
+        });
+    </script>
+</div>

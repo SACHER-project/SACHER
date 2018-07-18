@@ -1,0 +1,1271 @@
+{% extends "Sacher/base.html" %}
+{% load static %}
+{% load get_item_dict %}
+
+{% block head %}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>#}
+    <script src="{% static 'sacher/vendor/jquery.form.min.js' %}"></script>
+{% endblock %}
+{% block head_link %}
+    <link href="{% static 'sacher/css/gestione_beni.css' %}" rel="stylesheet">
+{% endblock %}
+{% block title %}Gestione Beni{% endblock %}
+{% block h1title %}Gestione Beni{% endblock %}
+{% block content %}
+    {% spaceless %}
+
+        {% if perms.Sacher.add_beneculturale and user.groups.all.0.name == "ente" %}
+            <div id="add_bc_dialog" style="display:none;">
+                <form id="create_BC_form" enctype="multipart/form-data" method="post" action="{% url 'sacher:create_bc' %}">{% csrf_token %}
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="nome_bc">
+                                    <input type="text" name="nome" id="create-nome" placeholder="Denominazione*" size="30" required>
+                                    <a tabindex="-1" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il nome storico o tradizionale del bene."></a>
+                                    <br>
+                                    <input type="text" name="altra_den" id="create-altra_den" placeholder="Altra denominazione" size="30">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare denominazioni alternative attuali o altre denominazioni che il bene ha assunto nel tempo."></a>
+                                    <br>
+                                    <input type="text" name="ICCD" id="create-ICCD" placeholder="Codice univoco ICCD">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Riportare il codice univoco NCT che identifica a livello nazionale il bene presente nel Catalogo Generale dei Beni Culturali dell’Istituto Centrale per il Catalogo e la Documentazione (ICCD)."></a>
+                                    {# TODO inserisci pulsante http://www.catalogo.beniculturali.it/sigecSSU_FE/ricercaGuidata.action#}
+                                    <br>
+                                </div>
+                                <div class="allega">
+                                    <label for="create-file-upload" style="color: #95613a;" class="custom-file-upload">
+                                        <i class="fa fa-cloud-upload" style="color: #95613a;"></i> Allega immagini
+                                    </label>
+                                    <input id="create-file-upload" name="file-upload" type="file" multiple/>
+                                    <br>
+                                </div>
+                                <div class="btn-Save-Exit">
+                                    <button type="submit" id="create-salva">SALVA</button>
+                                    <button type="button" id="create-esci" onClick="$('#add_bc_dialog').dialog('close');">ESCI</button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="well well-sm pre-scrollable" {% comment %}style="max-height:550px;"{% endcomment %}>
+                                    <samp id="create-containerLog" class="scroll-pane">
+                                        <strong style="color: #95613a;">DATI ANAGRAFICI</strong>
+                                        <br>
+                                        <label style="color: #95613a;" for="macrocategoria">Macrocategoria:</label>
+                                        <br>
+                                        <select id="create-macrocategoria" name="macrocategoria" required>
+                                            <option value="">---------</option>
+                                            {% for m in macrocategorie %}
+                                                <option value="{{ m.id }}">{{ m.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Scegliere dall'elenco la locuzione che individua il bene in base alla categoria architettonica."></a>
+                                        <br>
+                                        <label style="color: #95613a;" for="def_tipologica">Definizione tipologica:</label>
+                                        <br>
+                                        <select id="create-def_tipologica" name="def_tipologica" disabled required></select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Scegliere dall'elenco il termine che individua il bene in base alla tipologia architettonica."></a>
+                                        <br>
+                                        <label style="color: #95613a;" for="qualificazione">Qualificazione:</label>
+                                        <br>
+                                        <select id="create-qualificazione" name="qualificazione" disabled></select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Scegliere dall'elenco l'aggettivo che caratterizza il bene dal punto di vista della condizione giuridica, amministrativa o funzionale."></a>
+                                        <br>
+
+                                        <input type="text" id="create-localizzazione" name="localizzazione" placeholder="Localizzazione*" required>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare la localizzazione geografico-amministrativa del bene, con riferimento alla ripartizione geografico-amministrativa dell'Italia, includendo Comune, Località, Via, Numero civico."></a>
+
+                                        <br>
+                                        <input id="create-lat" name="lat" placeholder="Latitudine" required>
+                                        <input id="create-lng" name="lng" placeholder="Longitudine" required>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare le coordinate del bene utilizzando il punto come separatore per i decimali."></a>
+
+                                        <br>
+                                        {#<input type="text" id="create-datepicker" name="datazione" placeholder="Datazione">#}
+                                        <select id="create-datepicker" name="datazione" title="Datazione">
+                                            <option value="">---------</option>
+                                            {% for e in epoche %}
+                                                <option value="{{ e }}">{{ e }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare la datazione e l'epoca di realizzazione della principale fase costruttiva attualmente esistente."></a>
+
+                                        <br>
+                                        <input type="text" id="create-autore" name="autore" placeholder="Autore/Ente collettivo">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'autore del bene (persona singola o ente collettivo)."></a>
+
+                                        <br>
+                                        <input type="text" id="create-ente" name="ente" placeholder="Ente Competente">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il codice ICCD che identifica l'Ente sotto la cui competenza ricade la tutela del bene catalogato."></a>
+
+                                        <br>
+                                        <textarea id="create-descrizione" name="descrizione" placeholder="Descrizione"></textarea>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Inserire una descrizione sintetica del bene."></a>
+
+                                        <br>
+                                        <input type="text" placeholder="Sito Web" id="create-sito-web" name="sito-web">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il sito web di riferimento del bene, se disponibile."></a>
+
+                                        <br>
+                                        <input type="text" placeholder="Email" id="create-email" name="email">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'e-mail di riferimento del bene, se disponibile."></a>
+
+                                        <br>
+                                        <input type="text" placeholder="Telefono" id="create-telefono" name="telefono">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il telefono di riferimento per il bene della scheda."></a>
+
+                                        <br>
+                                        <textarea placeholder="Altri Codici" id="create-tag" name="tag"></textarea>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare i codici che individuano le schede riferite al bene in altri sistemi specificando l'ente o soggetto che le ha prodotte."></a>
+
+                                        <br>
+                                        <textarea placeholder="Link risorse esterne" id="create-link" name="link"></textarea>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Link a risorse esterne riferite al bene."></a>
+
+                                        {#                              TODO  https://www.patrimonioculturale-er.it/webgis/#}
+                                        {# pagina diretta del bene, link da XLS. se non c'è mettiamo pa gina generale di ricerca (http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/ricercabeni)#}
+                                        {#                                http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/dettagliobene195956#}
+                                        {#                                pulsanti verso http://www.cartadelrischio.it/ICR_DATI/cdr/HTML/Metadati/index.asp#}
+                                        <br>
+                                        <div id="create-selected_files" class="selected_files"></div>
+                                    </samp>
+                                </div>
+                                <button type="button" id="create-open-detailed-dialog">COMPILA SCHEDA DETTAGLIATA</button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <div id="add_bc_detailed_dialog" style="display:none;">
+                <form id="create_det_BC_form" enctype="multipart/form-data" method="post" action="{% url 'sacher:create_bc' %}">{% csrf_token %}
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="nome_bc">
+                                    <input type="text" name="nome" id="create-det_nome" placeholder="Denominazione*" size="30" required>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il nome storico o tradizionale del bene."></a>
+                                    <br>
+                                    <input type="text" name="altra_den" id="create-det_altra_den" placeholder="Altra denominazione" size="30">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare denominazioni alternative attuali o altre denominazioni che il bene ha assunto nel tempo."></a>
+                                    <br>
+                                    <input type="text" name="ICCD" id="create-det_ICCD" placeholder="Codice univoco ICCD">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Riportare il codice univoco NCT che identifica a livello nazionale il bene presente nel Catalogo Generale dei Beni Culturali dell’Istituto Centrale per il Catalogo e la Documentazione (ICCD)."></a>
+                                    <br>
+                                    <input type="text" name="keycode_sigec" id="create-det_keycode_sigec" placeholder="Keycode Sigec">
+                                    {# TODO inserisci pulsante http://www.catalogo.beniculturali.it/sigecSSU_FE/ricercaGuidata.action#}
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Riportare il codice univoco interno relativo alla scheda del catalogo ICCD riferita al bene."></a>
+                                    <br>
+                                </div>
+                                <div class="allega">
+                                    <label for="create-det_file-upload" style="color: #95613a;" class="custom-file-upload">
+                                        <i class="fa fa-cloud-upload" style="color: #95613a;"></i> Allega immagini
+                                    </label>
+                                    <input id="create-det_file-upload" name="file-upload" type="file" multiple/>
+                                    <br>
+                                </div>
+                                <div class="btn-Save-Exit">
+                                    <button type="submit" id="create-det_salva">SALVA</button>
+                                    <button type="button" id="create-det_esci" onClick="$('#add_bc_detailed_dialog').dialog('close');">ESCI</button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="well well-sm pre-scrollable" {% comment %}style="max-height:550px;"{% endcomment %}>
+                                    <samp id="create-det_containerLog" class="scroll-pane">
+                                        <strong style="color: #95613a;">DATI ANAGRAFICI</strong>
+                                        <br>
+                                        <label style="color: #95613a;" for="det_macrocategoria">Macrocategoria:</label>
+                                        <br>
+                                        <select id="create-det_macrocategoria" name="macrocategoria" required>
+                                            <option value="">---------</option>
+                                            {% for m in macrocategorie %}
+                                                <option value="{{ m.id }}">{{ m.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Scegliere dall'elenco la locuzione che individua il bene in base alla categoria architettonica."></a>
+                                        <br>
+                                        <label style="color: #95613a;" for="det_def_tipologica">Definizione tipologica:</label>
+                                        <br>
+                                        <select id="create-det_def_tipologica" name="def_tipologica" disabled required></select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Scegliere dall'elenco il termine che individua il bene in base alla tipologia architettonica."></a>
+                                        <br>
+                                        <label style="color: #95613a;" for="det_qualificazione">Qualificazione:</label>
+                                        <br>
+                                        <select id="create-det_qualificazione" name="qualificazione" disabled></select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Scegliere dall'elenco l'aggettivo che caratterizza il bene dal punto di vista della condizione giuridica, amministrativa o funzionale."></a>
+                                        <br>
+
+                                        <input type="text" id="create-det_localizzazione" name="localizzazione" placeholder="Localizzazione*" required>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare la localizzazione geografico-amministrativa del bene, con riferimento alla ripartizione geografico-amministrativa dell'Italia, includendo Comune, Località, Via, Numero civico."></a>
+                                        <br>
+                                        <input type="text" id="create-det_lat" name="lat" placeholder="Latitudine" required>
+                                        <input type="text" id="create-det_lng" name="lng" placeholder="Longitudine" required>
+                                        <br>
+                                        {#                                TODO calendario no, #}
+                                        {#                                        <input type="text" id="create-det_datepicker" name="datazione" placeholder="Datazione">#}
+                                        <select id="create-det_datepicker" name="datazione" title="Datazione">
+                                            <option value="">---------</option>
+                                            {% for e in epoche %}
+                                                <option value="{{ e }}">{{ e }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare la datazione e l'epoca di realizzazione della principale fase costruttiva attualmente esistente."></a>
+                                        <br>
+                                        <input type="text" id="create-det_ambito_culturale" name="ambito_culturale" placeholder="Ambito culturale">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'ambito culturale a cui può essere riferito il bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_epoca_prima_attestazione" name="epoca_prima_attestazione" placeholder="Epoca prima attestazione">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'epoca della prima fase costruttiva documentata da fonti scritte e/o materiali."></a>
+                                        <br>
+                                        <input type="text" id="create-det_autore" name="autore" placeholder="Autore/Ente collettivo">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'autore del bene (persona singola o ente collettivo)."></a>
+                                        <br>
+                                        <input type="text" id="create-det_pseudonimo" name="pseudonimo" placeholder="Bibliografia">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Bibliografia"></a>
+                                        <br>
+                                        <input type="text" id="create-det_ente" name="ente" placeholder="Ente competente">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il codice ICCD che identifica l'Ente sotto la cui competenza ricade la tutela del bene catalogato."></a>
+
+                                        <br>
+                                        <input type="text" id="create-det_ente_schedatore" name="ente_schedatore" placeholder="Ente schedatore">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il codice ICCD che identifica l'Ente responsabile della redazione della scheda di catalogo."></a>
+                                        <br>
+                                        <input type="text" id="create-det_tipo_proprieta" name="tipo_proprieta" placeholder="Tipo proprietà">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare se il bene è di proprietà ecclesiastica, pubblica, privata o mista."></a>
+                                        <br>
+                                        <input type="text" id="create-det_proprietario" name="proprietario" placeholder="Proprietario">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il nome del proprietario del bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_dati_catastali" name="dati_catastali" placeholder="Dati catastali">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il luogo nell'ambito della ripartizione catastale (Comune, Foglio/Data, Particelle)."></a>
+                                        <br>
+                                        <textarea id="create-det_descrizione" name="descrizione" placeholder="Descrizione"></textarea>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Inserire una descrizione sintetica del bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_stato_conservazione" name="stato_conservazione" placeholder="Stato di conservazione">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare lo stato generale di conservazione del bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_uso_attuale" name="uso_attuale" placeholder="Uso attuale">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'uso attuale a cui è adibito il bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_uso_storico" name="uso_storico" placeholder="Uso storico">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'uso storico del bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_condizione_giuridica" name="condizione_giuridica" placeholder="Condizione  giuridica">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare la condizione giuridica del bene."></a>
+                                        <br>
+                                        <input type="text" id="create-det_tipo_tutela" name="tipo_tutela" placeholder="Tipo di tutela">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il tipo di tutela del bene tra Declaratoria, Ope legis e Provvedimento."></a>
+                                        <br>
+                                        <input type="text" id="create-det_provvedimenti_tutela" name="provvedimenti_tutela" placeholder="Provvedimenti di tutela">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare i provvedimenti di tutela che riguardano il bene."></a>
+                                        <br>
+                                        <input type="text" placeholder="Sito Web" id="create-det_sito-web" name="sito-web">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il sito web di riferimento del bene, se disponibile."></a>
+                                        <br>
+                                        <input type="text" placeholder="Email" id="create-det_email" name="email">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare l'e-mail di riferimento del bene, se disponibile."></a>
+                                        <br>
+                                        <input type="text" placeholder="Telefono" id="create-det_telefono" name="telefono">
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare il telefono di riferimento per il bene della scheda."></a>
+                                        <br>
+
+                                        <textarea placeholder="Altri Codici" id="create-det_tag" name="tag"></textarea>
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                           data-content="Indicare i codici che individuano le schede riferite al bene in altri sistemi specificando l'ente o soggetto che le ha prodotte."></a>
+                                        <br>
+                                        <textarea placeholder="Link risorse esterne" id="create-det_link" name="link"></textarea>
+                                        {#                              TODO  https://www.patrimonioculturale-er.it/webgis/#}
+                                        {# pagina diretta del bene, link da XLS. se non c'è mettiamo pa gina generale di ricerca (http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/ricercabeni)#}
+                                        {#                                http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/dettagliobene195956#}
+                                        {#                                pulsanti verso http://www.cartadelrischio.it/ICR_DATI/cdr/HTML/Metadati/index.asp#}
+                                        <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Link a risorse esterne riferite al bene."></a>
+                                        <br>
+                                        <div id="create-det_selected_files" class="selected_files"></div>
+                                    </samp>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        {% endif %}
+
+        <div id="edit_bc_dialog" style="display:none;">
+            <form id="edit_BC_form" enctype="multipart/form-data" method="post" action="{% url 'sacher:edit_bc' %}">{% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            <div class="nome_bc">
+                                <input type="text" name="nome" id="nome" placeholder="Denominazione*" size="30" required>
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Indicare il nome storico o tradizionale del bene."></a>
+                                <br>
+                                <input type="text" name="altra_den" id="altra_den" placeholder="Altra denominazione" size="30">
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Indicare denominazioni alternative attuali o altre denominazioni che il bene ha assunto nel tempo."></a>
+                                <br>
+                                <input type="text" name="ICCD" id="ICCD" placeholder="Codice univoco ICCD">
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Riportare il codice univoco NCT che identifica a livello nazionale il bene presente nel Catalogo Generale dei Beni Culturali dell’Istituto Centrale per il Catalogo e la Documentazione (ICCD)."></a>
+                                {# TODO inserisci pulsante http://www.catalogo.beniculturali.it/sigecSSU_FE/ricercaGuidata.action#}
+                                <br>
+                            </div>
+                            <div class="allega">
+                                <label for="file-upload" style="color: #95613a;" class="custom-file-upload">
+                                    <i class="fa fa-cloud-upload" style="color: #95613a;"></i> Allega immagini
+                                </label>
+                                <input id="file-upload" name="file-upload" type="file" multiple/>
+                                <br>
+                            </div>
+                            <div class="btn-Save-Exit">
+                                <button type="submit" id="salva">SALVA</button>
+                                <button type="button" id="esci" onClick="$('#edit_bc_dialog').dialog('close');">ESCI</button>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="well well-sm pre-scrollable" {% comment %}style="max-height:550px;"{% endcomment %}>
+                                <samp id="containerLog" class="scroll-pane">
+                                    <strong style="color: #95613a;">DATI ANAGRAFICI</strong>
+                                    <br>
+                                    <label style="color: #95613a;" for="macrocategoria">Macrocategoria:</label>
+                                    <br>
+                                    <select id="macrocategoria" name="macrocategoria" required>
+                                        <option value="">---------</option>
+                                        {% for m in macrocategorie %}
+                                            <option value="{{ m.id }}">{{ m.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Scegliere dall'elenco la locuzione che individua il bene in base alla categoria architettonica."></a>
+                                    <br>
+                                    <label style="color: #95613a;" for="def_tipologica">Definizione tipologica:</label>
+                                    <br>
+                                    <select id="def_tipologica" name="def_tipologica" disabled required></select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Scegliere dall'elenco il termine che individua il bene in base alla tipologia architettonica."></a>
+                                    <br>
+                                    <label style="color: #95613a;" for="qualificazione">Qualificazione:</label>
+                                    <br>
+                                    <select id="qualificazione" name="qualificazione" disabled></select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Scegliere dall'elenco l'aggettivo che caratterizza il bene dal punto di vista della condizione giuridica, amministrativa o funzionale."></a>
+                                    <br>
+
+                                    <input type="text" id="localizzazione" name="localizzazione" placeholder="Localizzazione*" required>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare la localizzazione geografico-amministrativa del bene, con riferimento alla ripartizione geografico-amministrativa dell'Italia, includendo Comune, Località, Via, Numero civico."></a>
+
+                                    <br>
+                                    <input type="text" id="lat" name="lat" placeholder="Latitudine" required>
+                                    <input type="text" id="lng" name="lng" placeholder="Longitudine" required>
+                                    <br>
+                                    {#                                    <input type="text" id="datepicker" name="datazione" placeholder="Datazione">#}
+                                    <select id="datepicker" name="datazione" title="Datazione">
+                                        <option value="">---------</option>
+                                        {% for e in epoche %}
+                                            <option value="{{ e }}">{{ e }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare la datazione e l'epoca di realizzazione della principale fase costruttiva attualmente esistente."></a>
+
+                                    <br>
+                                    <input type="text" id="autore" name="autore" placeholder="Autore/Ente collettivo">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'autore del bene (persona singola o ente collettivo)."></a>
+
+                                    <br>
+                                    <input type="text" id="ente" name="ente" placeholder="Ente Competente">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il codice ICCD che identifica l'Ente sotto la cui competenza ricade la tutela del bene catalogato."></a>
+
+                                    <br>
+                                    <textarea id="descrizione" name="descrizione" placeholder="Descrizione"></textarea>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Inserire una descrizione sintetica del bene."></a>
+
+                                    <br>
+                                    <input type="text" placeholder="Sito Web" id="sito-web" name="sito-web">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il sito web di riferimento del bene, se disponibile."></a>
+
+                                    <br>
+                                    <input type="text" placeholder="Email" id="email" name="email">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'e-mail di riferimento del bene, se disponibile."></a>
+
+                                    <br>
+                                    <input type="text" placeholder="Telefono" id="telefono" name="telefono">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il telefono di riferimento per il bene della scheda."></a>
+
+                                    <br>
+                                    <textarea placeholder="Altri Codici" id="tag" name="tag"></textarea>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare i codici che individuano le schede riferite al bene in altri sistemi specificando l'ente o soggetto che le ha prodotte."></a>
+
+                                    <br>
+                                    <textarea placeholder="Link risorse esterne" id="link" name="link"></textarea>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Link a risorse esterne riferite al bene."></a>
+
+                                    {#                              TODO  https://www.patrimonioculturale-er.it/webgis/#}
+                                    {# pagina diretta del bene, link da XLS. se non c'è mettiamo pa gina generale di ricerca (http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/ricercabeni)#}
+                                    {#                                http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/dettagliobene195956#}
+                                    {#                                pulsanti verso http://www.cartadelrischio.it/ICR_DATI/cdr/HTML/Metadati/index.asp#}
+                                    <br>
+                                    <div id="selected_files" class="selected_files"></div>
+                                    <div id="bc_images"></div>
+                                </samp>
+                            </div>
+                            <button type="button" id="open-detailed-dialog">COMPILA SCHEDA DETTAGLIATA</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <div id="edit_bc_detailed_dialog" style="display:none;">
+            <form id="edit_det_BC_form" enctype="multipart/form-data" method="post" action="{% url 'sacher:edit_bc' %}">{% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            <div class="nome_bc">
+                                <input type="text" name="nome" id="det_nome" placeholder="Denominazione*" size="30" required>
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Indicare il nome storico o tradizionale del bene."></a>
+                                <br>
+                                <input type="text" name="altra_den" id="det_altra_den" placeholder="Altra denominazione" size="30">
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Indicare denominazioni alternative attuali o altre denominazioni che il bene ha assunto nel tempo."></a>
+                                <br>
+                                <input type="text" name="ICCD" id="det_ICCD" placeholder="Codice univoco ICCD">
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Riportare il codice univoco NCT che identifica a livello nazionale il bene presente nel Catalogo Generale dei Beni Culturali dell’Istituto Centrale per il Catalogo e la Documentazione (ICCD)."></a>
+                                <br>
+                                <input type="text" name="keycode_sigec" id="det_keycode_sigec" placeholder="Keycode Sigec">
+                                {# TODO inserisci pulsante http://www.catalogo.beniculturali.it/sigecSSU_FE/ricercaGuidata.action#}
+                                <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                   data-content="Riportare il codice univoco interno relativo alla scheda del catalogo ICCD riferita al bene."></a>
+                                <br>
+                            </div>
+                            <div class="allega">
+                                <label for="det_file-upload" style="color: #95613a;" class="custom-file-upload">
+                                    <i class="fa fa-cloud-upload" style="color: #95613a;"></i> Allega immagini
+                                </label>
+                                <input id="det_file-upload" name="file-upload" type="file" multiple/>
+                                <br>
+                            </div>
+                            <div class="btn-Save-Exit">
+                                <button type="submit" id="det_salva">SALVA</button>
+                                <button type="button" id="det_esci" onClick="$('#edit_bc_detailed_dialog').dialog('close');">ESCI</button>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="well well-sm pre-scrollable" {% comment %}style="max-height:550px;"{% endcomment %}>
+                                <samp id="det_containerLog" class="scroll-pane">
+                                    <strong style="color: #95613a;">DATI ANAGRAFICI</strong>
+                                    <br>
+                                    <label style="color: #95613a;" for="det_macrocategoria">Macrocategoria:</label>
+                                    <br>
+                                    <select id="det_macrocategoria" name="macrocategoria" required>
+                                        <option value="">---------</option>
+                                        {% for m in macrocategorie %}
+                                            <option value="{{ m.id }}">{{ m.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Scegliere dall'elenco la locuzione che individua il bene in base alla categoria architettonica."></a>
+                                    <br>
+                                    <label style="color: #95613a;" for="det_def_tipologica">Definizione tipologica:</label>
+                                    <br>
+                                    <select id="det_def_tipologica" name="def_tipologica" disabled required></select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Scegliere dall'elenco il termine che individua il bene in base alla tipologia architettonica."></a>
+                                    <br>
+                                    <label style="color: #95613a;" for="det_qualificazione">Qualificazione:</label>
+                                    <br>
+                                    <select id="det_qualificazione" name="qualificazione" disabled></select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Scegliere dall'elenco l'aggettivo che caratterizza il bene dal punto di vista della condizione giuridica, amministrativa o funzionale."></a>
+                                    <br>
+
+                                    <input type="text" id="det_localizzazione" name="localizzazione" placeholder="Localizzazione*" required>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare la localizzazione geografico-amministrativa del bene, con riferimento alla ripartizione geografico-amministrativa dell'Italia, includendo Comune, Località, Via, Numero civico."></a>
+                                    <br>
+                                    <input type="text" id="det_lat" name="lat" placeholder="Latitudine" required>
+                                    <input type="text" id="det_lng" name="lng" placeholder="Longitudine" required>
+                                    <br>
+                                    {#                                    <input type="text" id="det_datepicker" name="datazione" placeholder="Datazione">#}
+                                    <select id="det_datepicker" name="datazione" title="Datazione">
+                                        <option value="">---------</option>
+                                        {% for e in epoche %}
+                                            <option value="{{ e }}">{{ e }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare la datazione e l'epoca di realizzazione della principale fase costruttiva attualmente esistente."></a>
+                                    <br>
+                                    <input type="text" id="det_ambito_culturale" name="ambito_culturale" placeholder="Ambito culturale">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'ambito culturale a cui può essere riferito il bene."></a>
+                                    <br>
+                                    <input type="text" id="det_epoca_prima_attestazione" name="epoca_prima_attestazione" placeholder="Epoca prima attestazione">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'epoca della prima fase costruttiva documentata da fonti scritte e/o materiali."></a>
+                                    <br>
+                                    <input type="text" id="det_autore" name="autore" placeholder="Autore/Ente collettivo">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'autore del bene (persona singola o ente collettivo)."></a>
+                                    <br>
+                                    <input type="text" id="det_pseudonimo" name="pseudonimo" placeholder="Bibliografia">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Bibliografia"></a>
+                                    <br>
+                                    <input type="text" id="det_ente" name="ente" placeholder="Ente competente">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il codice ICCD che identifica l'Ente sotto la cui competenza ricade la tutela del bene catalogato."></a>
+
+                                    <br>
+                                    <input type="text" id="det_ente_schedatore" name="ente_schedatore" placeholder="Ente schedatore">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il codice ICCD che identifica l'Ente responsabile della redazione della scheda di catalogo."></a>
+                                    <br>
+                                    <input type="text" id="det_tipo_proprieta" name="tipo_proprieta" placeholder="Tipo proprietà">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare se il bene è di proprietà ecclesiastica, pubblica, privata o mista."></a>
+                                    <br>
+                                    <input type="text" id="det_proprietario" name="proprietario" placeholder="Proprietario">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il nome del proprietario del bene."></a>
+                                    <br>
+                                    <input type="text" id="det_dati_catastali" name="dati_catastali" placeholder="Dati catastali">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il luogo nell'ambito della ripartizione catastale (Comune, Foglio/Data, Particelle)."></a>
+                                    <br>
+                                    <textarea id="det_descrizione" name="descrizione" placeholder="Descrizione"></textarea>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Inserire una descrizione sintetica del bene."></a>
+                                    <br>
+                                    <input type="text" id="det_stato_conservazione" name="stato_conservazione" placeholder="Stato di conservazione">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare lo stato generale di conservazione del bene."></a>
+                                    <br>
+                                    <input type="text" id="det_uso_attuale" name="uso_attuale" placeholder="Uso attuale">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'uso attuale a cui è adibito il bene."></a>
+                                    <br>
+                                    <input type="text" id="det_uso_storico" name="uso_storico" placeholder="Uso storico">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'uso storico del bene."></a>
+                                    <br>
+                                    <input type="text" id="det_condizione_giuridica" name="condizione_giuridica" placeholder="Condizione  giuridica">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare la condizione giuridica del bene."></a>
+                                    <br>
+                                    <input type="text" id="det_tipo_tutela" name="tipo_tutela" placeholder="Tipo di tutela">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il tipo di tutela del bene tra Declaratoria, Ope legis e Provvedimento."></a>
+                                    <br>
+                                    <input type="text" id="det_provvedimenti_tutela" name="provvedimenti_tutela" placeholder="Provvedimenti di tutela">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare i provvedimenti di tutela che riguardano il bene."></a>
+                                    <br>
+                                    <input type="text" placeholder="Sito Web" id="det_sito-web" name="sito-web">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il sito web di riferimento del bene, se disponibile."></a>
+                                    <br>
+                                    <input type="text" placeholder="Email" id="det_email" name="email">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare l'e-mail di riferimento del bene, se disponibile."></a>
+                                    <br>
+                                    <input type="text" placeholder="Telefono" id="det_telefono" name="telefono">
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare il telefono di riferimento per il bene della scheda."></a>
+                                    <br>
+
+                                    <textarea placeholder="Altri Codici" id="det_tag" name="tag"></textarea>
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus"
+                                       data-content="Indicare i codici che individuano le schede riferite al bene in altri sistemi specificando l'ente o soggetto che le ha prodotte."></a>
+                                    <br>
+                                    <textarea placeholder="Link risorse esterne" id="det_link" name="link"></textarea>
+                                    {#                              TODO  https://www.patrimonioculturale-er.it/webgis/#}
+                                    {# pagina diretta del bene, link da XLS. se non c'è mettiamo pa gina generale di ricerca (http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/ricercabeni)#}
+                                    {#                                http://vincoliinrete.beniculturali.it/VincoliInRete/vir/bene/dettagliobene195956#}
+                                    {#                                pulsanti verso http://www.cartadelrischio.it/ICR_DATI/cdr/HTML/Metadati/index.asp#}
+                                    <a tabindex="0" class="btn info" role="button" data-toggle="popover" data-trigger="focus" data-content="Link a risorse esterne riferite al bene."></a>
+                                    <br>
+                                    <div id="det_selected_files" class="selected_files"></div>
+                                </samp>
+
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+
+        <div class="row" style="height: 100%;">
+            <div class="col-sm-5" style="background-color:#f0f0f0">
+                <div class="card">
+                    <div class="container" style="margin: 24px 0;">
+                        <p>Lista dei Beni Culturali</p>
+                        <div class="input-group mb-3">
+                            <input class="form-control" placeholder="Ricerca Bene Culturale" name="search-bc" id="search-bc" type="search" onkeyup="search_bc()">
+                            <div class="input-group-prepend"><span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span></div>
+                        </div>
+                        <div id="bc-radiolist" class="well well-sm pre-scrollable" style="font-size:1.2rem;">
+                            {% for bc in bbcc %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="bc-radio" id="bc-{{ bc.id }}" value="{{ bc.id }}">
+                                    <label class="form-check-label" for="bc-{{ bc.id }}"> {{ bc.nome }}<br>{{ bc.localita|escape }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if user.groups.all.0.name == 'ente' %}
+                            <button id="add-bc" type="button" class="btn-sacher" title="Aggiungi Bene Culturale">Aggiungi Bene Culturale</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-7" style="background-color:#f0f0f0">
+                <div id="bc-info" class="well well-sm pre-scrollable" style="overflow-x: hidden;"></div>
+                <div id="bc-modifier" style="display: none">
+                    <button id="edit-bc" type="button" class="btn-sacher" title="MODIFICA BC">MODIFICA BC</button>
+                    {% if user.groups.all.0.name == 'ente' %}
+                        <button id="delete-bc" type="button" class="btn-sacher2" title="ELIMINA">ELIMINA</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var add_bc = $('#add-bc');
+            {% if user.groups.all.0.name == 'ente' %}
+                var create_BC_form = $('#create_BC_form');
+                var add_bc_dialog = $("#add_bc_dialog");
+                var create_det_BC_form = $('#create_det_BC_form');
+                var add_bc_detailed_dialog = $("#add_bc_detailed_dialog");
+            {% endif %}
+
+            var edit_BC_form = $('#edit_BC_form');
+            var edit_bc_dialog = $("#edit_bc_dialog");
+            var edit_det_BC_form = $('#edit_det_BC_form');
+            var edit_bc_detailed_dialog = $("#edit_bc_detailed_dialog");
+
+            var stored_files = [];
+            var imgs_to_remove = [];
+
+            var selected_bc = null;
+            var bbcc = [];
+            load_bbcc();
+
+            function load_bbcc() {
+                {% for bc in bbcc %}
+                    var bc;
+                    bc = {
+                        LatLng: "{{ bc.lat }},{{ bc.lon }}",
+                        name: "{{ bc.nome|escapejs }}",
+                        altra_den: "{{ bc.altra_denominazione|default_if_none:""|escapejs }}",
+                        id: {{ bc.id }},
+                        {% with desc_default=bc.descrizione|default_if_none:"" %}
+                            desc: "{{ desc_default|escapejs }}",
+                        {% endwith %}
+                        iccd_key: "{{ bc.keycode_iccd|default_if_none:"" }}",
+                        iccd_id: "{{ bc.id_iccd|default_if_none:"" }}",
+                        localita: "{{ bc.localita|escapejs|default_if_none:"" }}",
+                        datazione: "{{ bc.datazione|default_if_none:"" }}",
+                        autore: "{{ bc.autore|default_if_none:"" }}",
+                        ente: "{{ bc.ente|default_if_none:"" }}",
+                        sito_web: "{{ bc.sito_web|default_if_none:"" }}",
+                        email: "{{ bc.email|default_if_none:"" }}",
+                        phone_number: "{{ bc.phone_number|default_if_none:"" }}",
+                        tags: "{{ bc.tags|default_if_none:""|escapejs }}",
+                        external_link: "{{ bc.external_link|default_if_none:""|escapejs }}",
+                        <!--@formatter:off-->
+                        categoria: {% if not bc.categoria %}""{% else %}"{% if bc.categoria.sovracategoria.sovracategoria %}{{ bc.categoria.sovracategoria.sovracategoria.nome }}\;{% endif %}{% if bc.categoria.sovracategoria %}{{ bc.categoria.sovracategoria.nome }}\;{% endif %}{{ bc.categoria.nome }}"{% endif %},
+                        <!--@formatter:on-->
+                        categoria_ids: [],
+                        images: [
+                            {% for img in bc_imgs %}
+                                {% ifequal img.bc.id  bc.id %}
+                                    ["{{ img.img.url }}", {{ img.id }}],
+                                {% endifequal %}
+                            {% endfor %}
+                        ],
+                        ambito_culturale: "{{ bc.beneculturaledetails.ambito_culturale|default_if_none:"" }}",
+                        epoca_prima_attestazione: "{{ bc.beneculturaledetails.epoca_prima_attestazione|default_if_none:"" }}",
+                        pseudonimo: "{{ bc.beneculturaledetails.pseudonimo|default_if_none:"" }}",
+                        ente_schedatore: "{{ bc.beneculturaledetails.ente_schedatore|default_if_none:"" }}",
+                        tipo_proprieta: "{{ bc.beneculturaledetails.tipo_proprieta|default_if_none:"" }}",
+                        proprietario: "{{ bc.beneculturaledetails.proprietario|default_if_none:"" }}",
+                        dati_catastali: "{{ bc.beneculturaledetails.dati_catastali|default_if_none:"" }}",
+                        stato_conservazione: "{{ bc.beneculturaledetails.stato_conservazione|default_if_none:"" }}",
+                        uso_attuale: "{{ bc.beneculturaledetails.uso_attuale|default_if_none:"" }}",
+                        uso_storico: "{{ bc.beneculturaledetails.uso_storico|default_if_none:"" }}",
+                        condizione_giuridica: "{{ bc.beneculturaledetails.condizione_giuridica|default_if_none:"" }}",
+                        tipo_tutela: "{{ bc.beneculturaledetails.tipo_tutela|default_if_none:"" }}",
+                        provvedimenti_tutela: "{{ bc.beneculturaledetails.provvedimenti_tutela|default_if_none:"" }}",
+                    };
+
+
+                    {% if bc.categoria %}bc.categoria_ids.push({{ bc.categoria_id }});{% endif %}
+                    {% if bc.categoria.sovracategoria %}bc.categoria_ids.push({{ bc.categoria.sovracategoria_id }});{% endif %}
+                    {% if bc.categoria.sovracategoria.sovracategoria %}bc.categoria_ids.push({{ bc.categoria.sovracategoria.sovracategoria_id }});{% endif %}
+
+                    bbcc.push(bc);
+                {% endfor %}
+            }
+
+            function search_bc() {
+                var input, filter, div;
+                let radios;
+                input = $("#search-bc");
+                filter = input.val().toUpperCase();
+                div = $("#bc-radiolist");
+                radios = div.find('input[type=radio]');
+                $.each(radios, function (i, bc) {
+                    if ($(bc).siblings('label').text().toUpperCase().indexOf(filter) > -1) {
+                        $(radios[i]).parent().show();
+                    } else {
+                        $(radios[i]).parent().hide();
+                    }
+                });
+            }
+
+            function fill_bc_info_panel() {
+                function default_value(str) {
+                    if (str == "" || typeof str == 'undefined') {
+                        return "---";
+                    }
+                    return str;
+                }
+
+                let bc_info = $('#bc-info');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Denominazione</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.name) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Altra denominazione</span> <span class="col-sm-4 bc-infos ">' + default_value(selected_bc.altra_den) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Indirizzo</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.localita) + '</span></div>');
+                let categorie = selected_bc.categoria.split(';');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Macrocategoria</span> <span class="col-sm-4 bc-infos">' + default_value(categorie[0]) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">DefinizioneTipologica</span> <span class="col-sm-4 bc-infos">' + default_value(categorie[1]) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Qualificazione</span> <span class="col-sm-4 bc-infos">' + default_value(categorie[2]) + '</span></div>');
+                let latlng = selected_bc.LatLng.split(',');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Latitudine</span> <span class="col-sm-4 bc-infos">' + default_value(latlng[0]) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Longitudine</span> <span class="col-sm-4 bc-infos">' + default_value(latlng[1]) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Datazione</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.datazione) + '</span></div>');
+                {#bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Epoca</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.localita)+ '</span></div>');#}
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Autore/Ente Collettivo</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.autore) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Ente Competente</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.ente) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Descrizione</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.desc) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Sito Web</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.sito_web) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">E-Mail</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.email) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Telefono</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.phone_number) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Altri Codici</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.tags) + '</span></div>');
+                bc_info.append('<div class="row"><span class="col-sm-3 bc-infos">Link Risorse Esterne</span> <span class="col-sm-4 bc-infos">' + default_value(selected_bc.external_link) + '</span></div>');
+
+                $('#bc-modifier').show();
+            }
+
+            $('input:radio[name=bc-radio]').change(function () {
+                let bc_id = $(this).val();
+                let bc_info = $('#bc-info');
+                bc_info.empty();
+                $.each(bbcc, function () {
+                    let bc = this;
+                    if (parseInt(bc_id) === bc.id) {
+                        selected_bc = bc;
+                        fill_bc_info_panel();
+                        return false;
+                    }
+                });
+            });
+
+            add_bc.click(function () {
+                add_bc_dialog.dialog('open');
+            });
+
+            function fill_edit_bc_form(bc) {
+                $('#nome').val(bc.name);
+                $('#altra_den').val(bc.altra_den);
+                $('#ICCD').val(bc.iccd_id);
+                $('#localizzazione').val(bc.localita);
+                $('#datepicker').val(bc.datazione);
+                $('#autore').val(bc.autore);
+                $('#ente').val(bc.ente);
+                var LatLng = bc.LatLng.split(",");
+                $('#lat').val(LatLng[0]);
+                $('#lng').val(LatLng[1]);
+                $('#sito-web').val(bc.sito_web);
+                $('#email').val(bc.email);
+                $('#telefono').val(bc.phone_number);
+                $('#descrizione').val(bc.desc);
+                $('#tag').val(bc.tags);
+                $('#link').val(bc.external_link);
+                {#$('#').val({{ bc. }});#}
+                var bc_categ = bc.categoria_ids;
+
+                var i = bc_categ.length - 1;
+                if (bc_categ[i]) {
+                    $('#macrocategoria option[value="' + bc_categ[i] + '"]').attr('selected', 'selected');
+
+                    let data = {
+                        'selected_id': bc_categ[i],
+                        'desired_category': 'DEF_TIPOLOGICA',
+                    };
+                    let select_to_populate = 'def_tipologica';
+                    categoria_ajax(data, select_to_populate);
+                    if (bc_categ[i - 1]) {
+                        $('#def_tipologica option[value="' + bc_categ[i - 1] + '"]').attr('selected', 'selected');
+
+                        data = {
+                            'selected_id': bc_categ[i - 1],
+                            'desired_category': 'QUALIFICAZIONE',
+                        };
+                        select_to_populate = 'qualificazione';
+                        categoria_ajax(data, select_to_populate);
+                        if (bc_categ[i - 2]) {
+                            $('#qualificazione option[value="' + bc_categ[i - 2] + '"]').attr('selected', 'selected');
+                        }
+                    }
+                }
+
+                {# Cancello le immagini di altri BBCC e aggiungo le immagini del BC corrente #}
+                var bc_images = $('#bc_images');
+                bc_images.empty();
+                if (bc.images.length === 0) {
+                    bc_images.hide();
+                }
+                else {
+                    for (i = 0; i < bc.images.length; i++) {
+                        let filename = (bc.images[i][0]).substring((bc.images[i][0]).lastIndexOf('/') + 1);
+                        bc_images.append("<div><img class='img-thumbnail' id='img_" + bc.images[i][1] + "' src='" + bc.images[i][0] +
+                            "' height='200' width='200'><div class='delete'><i id='delete_" + bc.images[i][1] + "' class='fa fa-remove'></i></div></div>");
+                    }
+                    bc_images.show();
+                }
+            }
+
+            function fill_edit_detailed_bc_form(bc) {
+                $('#det_nome').val(bc.name);
+                $('#det_altra_den').val(bc.altra_den);
+                $('#det_ICCD').val(bc.iccd_id);
+                $('#det_keycode_sigec').val(bc.iccd_key);
+                $('#det_localizzazione').val(bc.localita);
+                $('#det_datepicker').val(bc.datazione);
+                $('#det_autore').val(bc.autore);
+                $('#det_ente').val(bc.ente);
+                var LatLng = bc.LatLng.split(",");
+                $('#det_lat').val(LatLng[0]);
+                $('#det_lng').val(LatLng[1]);
+                $('#det_sito-web').val(bc.sito_web);
+                $('#det_email').val(bc.email);
+                $('#det_telefono').val(bc.phone_number);
+                $('#det_descrizione').val(bc.desc);
+                $('#det_tag').val(bc.tags);
+                $('#det_link').val(bc.external_link);
+                {#$('#').val({{ bc. }});#}
+                $('#det_ambito_culturale').val(bc.ambito_culturale);
+                $('#det_epoca_prima_attestazione').val(bc.epoca_prima_attestazione);
+                $('#det_pseudonimo').val(bc.pseudonimo);
+                $('#det_ente_schedatore').val(bc.ente_schedatore);
+                $('#det_tipo_proprieta').val(bc.tipo_proprieta);
+                $('#det_proprietario').val(bc.proprietario);
+                $('#det_dati_catastali').val(bc.dati_catastali);
+                $('#det_stato_conservazione').val(bc.stato_conservazione);
+                $('#det_uso_attuale').val(bc.uso_attuale);
+                $('#det_uso_storico').val(bc.uso_storico);
+                $('#det_condizione_giuridica').val(bc.condizione_giuridica);
+                $('#det_tipo_tutela').val(bc.tipo_tutela);
+                $('#det_provvedimenti_tutela').val(bc.provvedimenti_tutela);
+
+
+                var bc_categ = bc.categoria_ids;
+
+                var i = bc_categ.length - 1;
+                if (bc_categ[i]) {
+                    $('#det_macrocategoria option[value="' + bc_categ[i] + '"]').attr('selected', 'selected');
+
+                    let data = {
+                        'selected_id': bc_categ[i],
+                        'desired_category': 'DEF_TIPOLOGICA',
+                    };
+                    let select_to_populate = 'det_def_tipologica';
+                    categoria_ajax(data, select_to_populate);
+                    if (bc_categ[i - 1]) {
+                        $('#det_def_tipologica option[value="' + bc_categ[i - 1] + '"]').attr('selected', 'selected');
+
+                        data = {
+                            'selected_id': bc_categ[i - 1],
+                            'desired_category': 'QUALIFICAZIONE',
+                        };
+                        select_to_populate = 'det_qualificazione';
+                        categoria_ajax(data, select_to_populate);
+                        if (bc_categ[i - 2]) {
+                            $('#det_qualificazione option[value="' + bc_categ[i - 2] + '"]').attr('selected', 'selected');
+                        }
+                    }
+                }
+
+                {# Cancello le immagini di altri BBCC e aggiungo le immagini del BC corrente #}
+                var bc_images = $('#create-det_bc_images');
+                bc_images.empty();
+                if (bc.images.length === 0) {
+                    bc_images.hide();
+                }
+                else {
+                    for (i = 0; i < bc.images.length; i++) {
+                        bc_images.append("<div><img class='img-thumbnail' id='img_" + bc.images[i][1] + "' src='" + bc.images[i][0] +
+                            "' height='200' width='200'><div class='delete'><i id='delete_" + bc.images[i][1] + "' class='fa fa-remove'></i></div></div>");
+                    }
+                    bc_images.show();
+                }
+            }
+
+            $("input[name=lat]").each(function () {
+                $(this).spinner({
+                    min: -90,
+                    max: 90,
+                    step: .000001,
+                });
+            });
+
+            $("input[name=lng]").each(function () {
+                $(this).spinner({
+                    min: -180,
+                    max: 180,
+                    step: .000001,
+                });
+            });
+
+            $("input[name=datazione]").each(function () {
+                $(this).datepicker({
+                    dateFormat: "yy-mm-dd"
+                });
+            });
+
+            function handleFileSelect(e) {
+                let files = e.target.files;
+                let filesArr = Array.prototype.slice.call(files);
+                $('.selected_files').empty();
+                filesArr.forEach(function (f) {
+                    if (!f.type.match("image.*")) {
+                        return;
+                    }
+                    stored_files.push(f);
+                    let reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('.selected_files').each(function () {
+                            $(this).append("<div class='sel_file'><img src='" + e.target.result + "' style='width: 150px;'>" + f.name + "</div>");
+                        });
+                    };
+                    reader.readAsDataURL(f);
+                });
+            }
+
+            $("input[name=file-upload]").on("change", handleFileSelect);
+
+            $('#bc_images').on('click', '.delete', function () {
+                // Elimino l'immagine
+                var img_id = $(this).children('i').prop('id').replace("delete_", "");
+                // Nascondo l'immagine
+                $(this).parent().hide();
+
+                // Aggiungo a una lista l'id dell'immagine da rimuovere
+                imgs_to_remove.push(parseInt(img_id));
+            });
+
+            $('input[name=lat]').change(function (event) {
+                let lat = $('#lat');
+
+                if (lat.val() < -90 || lat.val() > 90) {
+                    lat[0].setCustomValidity("Il valore deve essere compreso tra -90 e 90.");
+                }
+                else {
+                    lat[0].setCustomValidity("");
+                }
+            });
+
+            $('input[name=lng]').change(function (event) {
+                let lng = $('#lng');
+
+                if (lng.val() < -180 || lng.val() > 180) {
+                    lng[0].setCustomValidity("Il valore deve essere compreso tra -180 e 180.");
+                }
+                else {
+                    lng[0].setCustomValidity("");
+                }
+            });
+
+            function categoria_ajax(data, select_to_populate) {
+                data['csrfmiddlewaretoken'] = "{{ csrf_token }}";
+                var select = $('select[name=' + select_to_populate + ']');
+                $.ajax({
+                    url: "{% url 'sacher:get_subcategory'%}",
+                    data: data,
+                    dataType: 'json',
+                    method: 'POST',
+                    async: false,
+                    success: function (data) {
+                        data = JSON.parse(data.content);
+                        if (jQuery.isEmptyObject(data)) {
+                            // Se vuoto disabilito il select qualificazione
+                            $('select[name=' + select_to_populate + ']').prop('disabled', true).empty();
+                        }
+                        else {
+                            $('select[name=' + select_to_populate + ']').prop('disabled', false).empty();
+                        }
+                        $(select).append($('<option></option>').val("").html("---------"));
+                        $.each(data, function (i, data) {
+                            $(select).append(
+                                $('<option></option>').val(data.id).html(data.nome)
+                            )
+                        });
+                    }
+                });
+            }
+
+            $('select[name=macrocategoria]').change(function () {
+                let data = {
+                    'selected_id': $(this).val(),
+                    'desired_category': 'DEF_TIPOLOGICA',
+                };
+                let select_to_populate = 'def_tipologica';
+
+                $('#qualificazione').empty();
+                categoria_ajax(data, select_to_populate);
+            });
+
+            $('select[name=def_tipologica]').change(function () {
+                let data = {
+                    'selected_id': $(this).val(),
+                    'desired_category': 'QUALIFICAZIONE',
+                };
+                let select_to_populate = 'qualificazione';
+                categoria_ajax(data, select_to_populate);
+            });
+
+            $('#create-open-detailed-dialog').click(function () {
+                add_bc_dialog.dialog('close');
+                add_bc_detailed_dialog.dialog('open');
+            });
+
+            $('#open-detailed-dialog').click(function () {
+                imgs_to_remove = [];
+                edit_bc_dialog.dialog('close');
+                fill_edit_detailed_bc_form(selected_bc);
+                edit_bc_detailed_dialog.dialog('open');
+            });
+
+            {% if user.groups.all.0.name == 'ente' %}
+                $('#delete-bc').click(function () {
+                    if (confirm('Vuoi confermale l\'eliminazione del bene culturale "' + selected_bc.name + '"?')) {
+                        data = {
+                            'bc_id': selected_bc.id,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        };
+
+                        $.ajax({
+                            url: "{% url 'sacher:bc_delete' %}",
+                            dataType: 'json',
+                            method: 'POST',
+                            data: data,
+                            success: function (data) {
+                                console.log(data);
+                                {#// Redirect#}
+                                {#window.location.href = data.content;#}
+                                window.stop();
+                                window.location.reload(true);
+                            }
+                        });
+                    }
+                });
+            {% endif %}
+
+            $('#edit-bc').click(function () {
+                if (selected_bc != null) {
+                    imgs_to_remove = [];
+                    fill_edit_bc_form(selected_bc);
+                    edit_bc_dialog.dialog('open');
+                }
+            });
+
+            $(document).ready(function () {
+                {% if user.groups.all.0.name == 'ente' %}
+                    add_bc_dialog.dialog({
+                        title: "Aggiungi Bene Culturale",
+                        autoOpen: false,
+                        height: dHeight,
+                        width: dWidth,
+                        maxHeight: dHeight,
+                        maxWidth: dWidth,
+                        position: {
+                            my: "center top",
+                            at: "center top+" + navbarHeight,
+                            of: window
+                        },
+                        modal: true,
+                        show: {
+                            effect: "drop",
+                            direction: 'up',
+                        },
+                    });
+
+                    add_bc_detailed_dialog.dialog({
+                        title: "Aggiungi Bene Culturale",
+                        autoOpen: false,
+                        height: dHeight,
+                        width: dWidth,
+                        maxHeight: dHeight,
+                        maxWidth: dWidth,
+                        position: {
+                            my: "center top",
+                            at: "center top+" + navbarHeight,
+                            of: window
+                        },
+                        modal: true,
+                        show: {
+                            effect: "drop",
+                            direction: 'up',
+                        },
+                    });
+                {% endif %}
+                edit_bc_dialog.dialog({
+                    title: "Modifica Bene Culturale",
+                    autoOpen: false,
+                    height: dHeight,
+                    width: dWidth,
+                    maxHeight: dHeight,
+                    maxWidth: dWidth,
+                    position: {
+                        my: "center top",
+                        at: "center top+" + navbarHeight,
+                        of: window
+                    },
+                    modal: true,
+                    show: {
+                        effect: "drop",
+                        direction: 'up',
+                    },
+                });
+
+                edit_bc_detailed_dialog.dialog({
+                    title: "Modifica Bene Culturale",
+                    autoOpen: false,
+                    height: dHeight,
+                    width: dWidth,
+                    maxHeight: dHeight,
+                    maxWidth: dWidth,
+                    position: {
+                        my: "center top",
+                        at: "center top+" + navbarHeight,
+                        of: window
+                    },
+                    modal: true,
+                    show: {
+                        effect: "drop",
+                        direction: 'up',
+                    },
+                });
+                {% if user.groups.all.0.name == 'ente' %}
+                    create_BC_form.ajaxForm({
+                        beforeSubmit: function (formData, formObject, formOptions) {
+                            formData.push(
+                                {#{name: 'bc_id', value: selected_bc.id},#}
+                            );
+                        },
+                        success: function (data) {
+                            console.log(data);
+                            imgs_to_remove = [];
+                            window.stop();
+                            window.location.reload(true);
+                        }
+                    });
+
+                    create_det_BC_form.ajaxForm({
+                        beforeSubmit: function (formData, formObject, formOptions) {
+                            formData.push(
+                                {#{name: 'bc_id', value: selected_bc.id},#}
+                                {name: 'details', value: true},
+                            );
+                        },
+                        success: function (data) {
+                            console.log(data);
+                            imgs_to_remove = [];
+                            window.stop();
+                            window.location.reload(true);
+                        }
+                    });
+                {% endif %}
+                edit_BC_form.ajaxForm({
+                    beforeSubmit: function (formData, formObject, formOptions) {
+                        formData.push(
+                            {name: 'bc_id', value: selected_bc.id},
+                            {name: 'imgs_to_remove', value: imgs_to_remove},
+                        );
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        imgs_to_remove = [];
+                        window.stop();
+                        window.location.reload(true);
+                    }
+                });
+
+                edit_det_BC_form.ajaxForm({
+                    beforeSubmit: function (formData, formObject, formOptions) {
+                        formData.push(
+                            {name: 'bc_id', value: selected_bc.id},
+                            {name: 'imgs_to_remove', value: imgs_to_remove},
+                            {name: 'details', value: true},
+                        );
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        imgs_to_remove = [];
+                        window.stop();
+                        window.location.reload(true);
+                    }
+                });
+
+            });
+        </script>
+    {% endspaceless %}
+{% endblock %}

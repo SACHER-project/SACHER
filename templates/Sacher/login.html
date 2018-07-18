@@ -1,0 +1,9 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}Sacher - Login{% endblock %}
+{% block h1title %}Sacher - Login{% endblock %}
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Login">
+    </form>
+{% endblock %}

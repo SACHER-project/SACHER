@@ -1,0 +1,19 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}Aggiungi un modello all'elemento "{{ elemento.nome }}"{% endblock %}
+
+{% block h1title %}
+    Aggiungi un modello all'elemento "{{ elemento.nome }}"
+{% endblock %}
+
+{% block content %}
+    <p>L'anno deve essere compreso tra 1800 e l'anno corrente.</p>
+    <form action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+        <table>
+	    {{ form.as_table }}
+        </table>
+	<input type="submit" value="Carica">
+    </form>
+
+    <a href="{% url 'sacher:elemento_detail' elemento.id %}">Torna alla pagina dell'elemento</a>
+{% endblock %}

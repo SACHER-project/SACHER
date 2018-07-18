@@ -1,0 +1,44 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}File - {{ file.filename }}{% endblock %}
+{% block h1title %}
+    {% if prev_file %}
+        <a href="{% url 'sacher:file_detail' prev_file.id %}">&lt;--</a>
+    {% endif %}
+    File - {{ file.filename }}
+    {% if next_file %}
+        <a href="{% url 'sacher:file_detail' next_file.id %}">--&gt;</a>
+    {% endif %}
+{% endblock %}
+{% block content %}
+    <a href="{{ base_url }}{{ file.path }}">Download</a> - <a href="{% url 'sacher:file_delete' file.id %}">Elimina</a> - <a href="{% url 'sacher:operazione_detail' file.operazione_id %}">Torna all'operazione</a>
+    <br>
+    <h3>- Informazioni (<a href="{% url 'sacher:file_edit' file.id %}">Modifica</a>):</h3>
+    <ul>
+        <li>Dimensione: {{ filesize }}</li>
+        {% if file.url %}
+            <li>URL esterno: <a href="{{ file.url }}" target="_blank">{{ file.url }}</a></li>
+        {% else %}
+            <li>URL esterno: -</li>
+        {% endif %}
+
+        {% if file.descrizione %}
+            <li>Descrizione: {{ file.descrizione }}</li>
+        {% else %}
+            <li>Descrizione: -</li>
+        {% endif %}
+
+    </ul>
+
+    {% if is_image %}
+        {% if exif %}
+            <h3>- Exif Data:</h3>
+            <ul>
+            {% for k,v in exif.items %}
+                <li>{{ k }}: {{ v }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        <img src="{{ base_url }}{{ file.path }}" style="max-width: 100%"/>
+    {% endif %}
+{% endblock %}

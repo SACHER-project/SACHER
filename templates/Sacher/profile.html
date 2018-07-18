@@ -1,0 +1,218 @@
+{% extends "Sacher/base.html" %}
+{% load static %}
+{% block title %}Profile{% endblock %}
+{% block h1title %}Profile{% endblock %}
+{% block head %}
+    <link href="{% static 'sacher/css/profile.css' %}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="row">
+            <div class="col-sm-5" style="background-color:#f0f0f0">
+                <div class="card">
+                    <div id="ProfileImage" class="img-thumbnail rounded float-left">
+                        {% if user.profile.avatar.url != '' %}
+                            <img class="img-thumbnail" src="{{ user.profile.avatar.url }}" height="200" width="200">
+                        {% else %}
+                            <img alt="User Pic" src="https://x1.xingassets.com/assets/frontend_minified/img/users/nobody_m.original.jpg" id="profile-image1" class="img-circle img-responsive"
+                                 height="200" width="200">
+                        {% endif %}
+                        <div class="element">
+                            <i class="fa fa-camera"></i><input type="file" name="" id="new-image">
+                        </div>
+                    </div>
+                    <p style="font-size: 24px;">{{ user.first_name }} {{ user.last_name }}</p>
+
+                    <div class="container" style="margin: 24px 0;">
+                        <br>
+                        <form id="profile-form">{% csrf_token %}
+                            <div class="form-group row">
+                                <label for="organization" class="col-form-label col-md-4">Istituto/Organizzazione:</label>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" name="organization" id="organization"
+                                            {% if user.profile.organization != '' %}
+                                           value="{{ user.profile.organization }}"
+                                            {% endif %}>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="phone" class="col-form-label col-md-4">Telefono:</label>
+                                <div class="col-md-6">
+                                    <input type="tel" class="form-control" name="phone" id="phone"
+                                            {% if user.profile.phone != '' %}
+                                           value="{{ user.profile.phone }}"
+                                            {% endif %}>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="website" class="col-form-label col-md-4">Sito Web:</label>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" name="website" id="website"
+                                            {% if user.profile.website != '' %}
+                                           value="{{ user.profile.website }}"
+                                            {% endif %}>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="curriculum" class="col-form-label col-md-4">Curriculum:</label>
+                                <div class="col-md-6">
+                                    <textarea class="form-control" name="curriculum" id="curriculum">{% if user.profile.curriculum != '' %}{{ user.profile.curriculum }}{% endif %}</textarea>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <button type="button" id="update-info" {% comment %}style="display: none;"{% endcomment %}>Salva</button>
+                    <button><a href="{% url 'password_reset' %}">Cambia password</a></button>
+                </div>
+            </div>
+            <div class="col-sm-7" style="background-color:#f0f0f0">
+                <div class="statistiche"> 
+                    <h2><b>STATISTICHE</b></h2>
+                    <h3><b>STATISTICHE GENERALI</b></h3>
+                    <p>BBCC presenti nel servizio: {{ bbcc }}</p>
+                    <p>BBCC con modello 3D: {{ bbcc_mod3d }}</p>
+                    <p>Utenti Registrati: {{ utenti }}</p>
+                    <p>Operazioni totali: {{ op }}</p>
+                    <p>Giorni totali di lavoro: {{ op_giorni }}</p>
+
+                    <h3><b>STATISTICHE PROGETTO: </b></h3><select title="Statistiche Progetto" id="bc-list"></select>
+                    <div id="progetti-stats" style="display: none;">
+                        <p>Utenti con ruolo: <span id="utenti"></span></p>
+                        <p>Immagini totali: <span id="immagini"></span></p>
+                        <p>Operazioni totali: <span id="operazioni"></span></p>
+                        <div class="chart-container">
+                            <canvas id="op-attivita-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <h3><b>STATISTICHE UTENTE</b></h3>
+                    <p>Progetti utente: {{ progetti_utente }}</p>
+                    <p>Operazioni totali: {{ operazioni_utente }}</p>
+
+                </div>
+            </div>
+        </div>
+        <script>
+            var profile_form = $('#profile-form');
+            var btn_submit = $('#update-info');
+            var img = $('#ProfileImage').children('img')[0];
+            var new_img = $('#new-image');
+            var bc_select = $('#bc-list');
+            var progetti_stats = $('#progetti-stats');
+            var bc_stats = {};
+            var attivita = [];
+            // display graph
+            var ctx = document.getElementById("op-attivita-chart").getContext('2d');
+            var myPieChart;
+
+
+            btn_submit.click(function (e) {
+                var formData = new FormData(profile_form[0]);
+                if ($(new_img).val()) {
+                    formData.append('img', $(new_img)[0].files[0]);
+                }
+
+                $.ajax({
+                    url: "{% url 'sacher:update_profile' %}",
+                    method: 'POST',
+                    data: formData,
+                    async: false,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.status === 200) {
+                            {#btn_submit.hide();#}
+                            window.stop();
+                            window.location.reload(true);
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert("An error occurred while sending a request.");
+                    }
+                });
+            });
+
+            $("i").click(function () {
+                $("input[type='file']").trigger('click');
+            });
+
+            $('input[type="file"]').change(function () {
+                var reader = new FileReader();
+                var new_img = $(this)[0].files[0];
+                reader.onload = function (e) {
+                    $(img).attr('src', e.target.result);
+                };
+                reader.readAsDataURL(new_img);
+
+                btn_submit.show();
+            });
+
+            bc_select.change(function () {
+                var id = $(this).val();
+                if (id == "") {
+                    progetti_stats.hide();
+                    $("#op-attivita-chart").parent().hide();
+                }
+                else {
+                    progetti_stats.show();
+                    var list = bc_stats[id];
+                    $('#utenti').text(list[0]);
+                    $('#immagini').text(list[1]);
+                    $('#operazioni').text(list[2]);
+
+                    var sum = list[3][0].reduce(add, 0);
+
+                    function add(a, b) {
+                        return a + b;
+                    }
+
+                    if (typeof myPieChart != 'undefined') {
+                        myPieChart.destroy();
+                    }
+                    if (sum > 0) {
+                        $("#op-attivita-chart").parent().show();
+                        let data = {
+                            datasets: [{
+                                data: list[3][0],
+                                label: "My First dataset",
+                                backgroundColor: ["rgb(139,69,19)", "rgb(160,82,45)", "rgb(205,133,63)", "rgb(222,184,135)", "rgb(255,228,181)"],
+                                {#borderColor: 'rgb(255, 99, 132)',#}
+                            }],
+
+                            // These labels appear in the legend and in the tooltips when hovering different arcs
+                            labels: attivita,
+                        };
+                        myPieChart = new Chart(ctx,
+                            {
+                                type: 'pie',
+                                data: data,
+                                options: {
+                                    maintainAspectRatio: false,
+                                    animation: {
+                                        animateScale: true
+                                    },
+                                }
+                            });
+                    } else {
+                        $("#op-attivita-chart").parent().hide();
+                    }
+                }
+            });
+
+            $(document).ready(function () {
+                progetti_stats.hide();
+                bc_select.append('<option value=""></option>');
+                {% for d in data %}
+                    bc_select.append('<option value="{{ d.bc.id }}">{{ d.bc.nome|escapejs }}</option>');
+                    bc_stats[{{ d.bc.id }}] = [{{ d.utenti }}, {{ d.immagini }}, {{ d.operazioni }}, [{{ d.operazioni_attivita }}]];
+                {% endfor %}
+
+                attivita = [{% for a in attivita %}"{{ a }}",{% endfor %}];
+
+            });
+        </script>
+    {% endspaceless %}
+{% endblock %}

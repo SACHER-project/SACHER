@@ -1,0 +1,63 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}{{ operazione.titolo }}{% endblock %}
+{% block h1title %}Operazione: {{ operazione.titolo }}{% endblock %}
+{% block content %}
+    <a href="{% url 'sacher:operazione_update' operazione.id %}">Modifica</a> - <a href="{% url 'sacher:operazione_delete' operazione.id %}">Elimina</a>
+
+    <h3>- Modelli 3D disponibili</h3>
+    <ul>
+    {% for model in operazione.elemento.modello3d_set.all %}
+        <li>{% ifnotequal curr_anno model.anno %}<a href="{% url 'sacher:operazione_detail_anno' model.elemento.id model.anno %}">Visualizza</a> -{% endifnotequal %}
+            {{ model.anno }}: <strong>{{ model.nome }}</strong> ({{ model.path }})</li>
+    {% endfor %}
+    </ul>
+    <p>Anno visualizzato: {{ curr_anno }}</p>
+
+    <p><table border="1">
+            <tr>
+                <th><h3>Modello</h3></th>
+                <th><h3>Informazioni</h3></th>
+            </tr>
+            <tr>
+                <td>{% include "Sacher/3dhop_widget.html" with params=params3dhop show_spots="True" width="600px" height="600px" %}</td>
+                <td><table>{{ operazione.as_table }}</table></td>
+            </tr>
+    </table></p>
+
+    <h3>- Operazioni collegate (<a href="{% url 'sacher:operazione_add_op_collegata' operazione.id %}">Aggiungi</a>):</h3>
+    {% for altra_op in operazione.altre_op.all %}
+        <p><a href="{% url 'sacher:operazione_detail' altra_op.id %}">{{ altra_op.titolo }}</a>
+            - (<a href="{% url 'sacher:operazione_remove_op_collegata' operazione.id altra_op.id %}">scollega</a>)</p>
+    {% empty %}
+        <p>Nessuna operazione.</p>
+    {% endfor %}
+
+    <h3>- Files (<a href="{% url 'sacher:operazione_add_file' operazione.id %}">Aggiungi</a>):</h3>
+    {% include 'Sacher/file_grid.html' with files=files %}
+
+    <h3>- Immagini (<a href="{% url 'sacher:operazione_add_file' operazione.id %}">Aggiungi</a>):</h3>
+    {% include 'Sacher/file_grid.html' with files=images empty_msg="Nessuna immagine." %}
+
+    <h3>- Riferimenti 3D (<a href="{% url 'sacher:operazione_add_ref3d' operazione.id %}">Aggiungi</a>):</h3>
+    {% for ref in operazione.ref3d_set.all %}
+        <p>{{ ref.nome }} ({{ ref.x }}, {{ ref.y }}, {{ ref.z }}): {{ ref.descrizione }}</p>
+    {% empty %}
+        <p>Nessun riferimento 3D.</p>
+    {% endfor %}
+
+    <h3>- Collegamenti Esterni (<a href="{% url 'sacher:operazione_add_collegamento_esterno' operazione.id %}">Aggiungi</a>):</h3>
+    {% if operazione.collegamentoesterno_set.all %}
+        <ul>
+        {% for lnk in operazione.collegamentoesterno_set.all %}
+            <li><a href="{{ lnk.url }}" target="_blank">{{ lnk.nome|default:lnk.url }}</a> - (<a href="{% url 'sacher:collegamento_esterno_delete' lnk.id %}">rimuovi</a>,
+                <a href="{% url 'sacher:operazione_update_collegamento_esterno' operazione.id lnk.id %}">modifica</a>)</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nessun collegamento esterno.</p>
+    {% endif %}
+
+    <br>
+    <p><a href="{% url 'sacher:elemento_detail' operazione.elemento_id %}">Torna alla pagina dell'elemento</a></p>
+    <p><a href="{% url 'sacher:bc_detail' operazione.elemento.bene_culturale_id %}">Torna alla pagina del bene culturale</a></p>
+{% endblock %}

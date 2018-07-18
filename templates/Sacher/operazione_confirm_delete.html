@@ -1,0 +1,11 @@
+{% extends 'Sacher/base.html' %}
+
+{% block title %}Conferma eliminazione di {{ operazione.titolo }}{% endblock %}
+{% block h1title %}Conferma eliminazione di {{ operazione.titolo }}{% endblock %}
+{% block content %}
+<form action="" method="post">
+	{% csrf_token %}
+	<p>Sei sicuro di voler cancellare "{{ object }}"?</p>
+	<input type="submit" value="Confirm">
+</form>
+{% endblock content %}

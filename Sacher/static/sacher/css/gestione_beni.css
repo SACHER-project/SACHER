@@ -1,0 +1,191 @@
+html, body {
+    height: 100%;
+}
+
+#add_bc_dialog input#create-nome, #add_bc_dialog input#create-ICCD, #add_bc_dialog input#create-altra_den,input#nome,
+#add_bc_detailed_dialog input#create-det_nome, #add_bc_detailed_dialog input#create-det_ICCD, #add_bc_detailed_dialog input#create-det_altra_den, #add_bc_detailed_dialog input#create-det_keycode_sigec
+#edit_bc_dialog input#nome, #edit_bc_dialog input#ICCD, #edit_bc_dialog input#altra_den,input#create-det_keycode_sigec,
+#edit_bc_detailed_dialog input#det_nome, #edit_bc_detailed_dialog input#det_ICCD, #edit_bc_detailed_dialog input#det_altra_den, #edit_bc_detailed_dialog input#det_keycode_sigec {
+    background-color: transparent;
+    color: #95613a;
+    border: none;
+    width: 70%;
+    padding-bottom: .3em;
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border-bottom: solid #95613a 2px;
+}
+
+#add_bc_dialog input#create-nome,
+#add_bc_detailed_dialog input#create-det_nome,
+#edit_bc_dialog input#nome,
+#edit_bc_detailed_dialog input#det_nome {
+    background: url("../icons/pencil.png") no-repeat scroll 7px 7px;
+    padding-right: 15px;
+    margin-bottom: .9em;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid #95613a;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+/*button "salva" in  "Aggiungi un nuovo bene" modal*/
+#add_bc_dialog #create-salva,
+#add_bc_detailed_dialog #create-det_salva,
+#edit_bc_dialog #salva,
+#edit_bc_detailed_dialog #det_salva {
+    color: #95613a;
+    border-radius: 40px;
+    display: block;
+    font-size: 16px;
+    margin: 0 auto;
+    padding: 12px 42px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: none;
+    transition: all .5s ease 0s;
+    background: #fdfc5f;
+    border: 1px solid #fdfc5f;
+}
+
+/*button "esci" in  "Aggiungi un nuovo bene" modal*/
+#add_bc_dialog #create-esci,
+#add_bc_detailed_dialog #create-det_esci,
+#edit_bc_dialog #esci,
+#edit_bc_detailed_dialog #det_esci {
+    color: #95613a;
+    border-radius: 40px;
+    display: block;
+    font-size: 16px;
+    margin: 0 auto;
+    padding: 12px 42px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: none;
+    transition: all .5s ease 0s;
+    background: #e7cfb6;
+    border: 1px solid #e7cfb6;
+}
+
+.nome_bc {
+    padding: 1.5em .1em;
+}
+
+.allega {
+    padding: 1.5em .1em;
+}
+
+.well input[type="text"], textarea[name="descrizione"], textarea[name="tag"], textarea[name="link"], select[name="qualificazione"], select[name="def_tipologica"], select[name="macrocategoria"], input[role="spinbutton"] {
+    width: 70%;
+    height: 100%;
+    background-color: #d6feff;
+    color: #95613a;
+    border: 1px solid #d6feff;
+    margin: .5em;
+}
+
+#create-open-detailed-dialog{
+    color: #95613a;
+    border-radius: 40px;
+    display: block;
+    float: right;
+    font-size: 12px;
+    margin: 0 auto;
+    margin-top: 0px;
+    margin-right: auto;
+    padding: 2px 12px;
+    margin-top: 2rem;
+    margin-right: 0.5rem;
+    text-shadow: none;
+    transition: all .5s ease 0s;
+    background: #e7e7e7;
+    border: 1px solid #e7e7e7;
+}
+select {
+    width: 70%;
+    margin-bottom: .5em;
+}
+
+.ui-widget-header {
+    color: #95613a;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    margin: auto;
+    /*text-align: center;*/
+    color: #95613a;
+}
+
+.card, .card >.container, #bc-radiolist{
+    height: 100%;
+}
+
+.btn-sacher{
+background: #fdfc5f;
+color: #95613a;
+border: 1px solid #fdfc5f;
+border-radius: 40px;
+font-size: 20px;
+margin: 10px auto;
+padding: 10px 20px;
+text-shadow: none;
+text-decoration: none !important;
+box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.19) !important;
+transition: all .5s ease 0s;
+display: table;
+flex-direction: column;
+justify-content: center;
+}
+
+.btn-sacher2{
+background: #e7cfb6;
+color: #95613a;
+border: 1px solid #e7cfb6;
+border-radius: 40px;
+font-size: 20px;
+margin: 10px auto;
+padding: 10px 20px;
+text-shadow: none;
+text-decoration: none !important;
+box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.19) !important;
+transition: all .5s ease 0s;
+display: table;
+flex-direction: column;
+justify-content: center;
+}
+
+.bc-infos{
+  color: #95613a;
+  font-size: 1.2rem;
+}
+
+#bc-info{
+  margin-top: 2rem;
+}
+
+#open-detailed-dialog{
+color: #95613a;
+border-radius: 40px;
+display: block;
+float: right;
+font-size: 12px;
+margin: 0 auto;
+    margin-top: 0px;
+    margin-right: auto;
+padding: 2px 12px;
+margin-top: 2rem;
+margin-right: 0.5rem;
+text-shadow: none;
+transition: all .5s ease 0s;
+background: #e7e7e7;
+border: 1px solid #e7e7e7;
+}

@@ -1,0 +1,370 @@
+{% extends "Sacher/base.html" %}
+{% load static %}
+
+{% block head %}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>#}
+    <script src="{% static 'sacher/vendor/jquery.form.min.js' %}"></script>
+    <link href="{% static 'sacher/css/projects.css' %}" rel="stylesheet">
+
+{% endblock %}
+{% block title %}Progetti{% endblock %}
+{% block h1title %}Progetti{% endblock %}
+{% block content %}
+    {% spaceless %}
+        <div class="container-fluid h-100" style="background-color:#f0f0f0;">
+            <div class="row" style="height: 100%;">
+                <div class="col-sm-5" style="background-color:#f0f0f0">
+                  <div class="card">
+                    <div class="container" style="margin: 24px 0;">
+
+                      <img class="img-sacher" src="{% static 'sacher/imgs/sacher_project.png' %}"/>
+
+                      {% if manage is True %}
+                          <button type="button" id='crea-utente' class="btn btn-sacher">CREA UTENTE</button>
+                          <a id='gestione-bene' class="btn btn-sacher" href='{% url 'sacher:gestione_beni' %}'>GESTIONE BENI</a>
+                          <button type="button" id='aggiungi-utente' class="btn btn-sacher">GESTIONE PROGETTI</button>
+                      {% endif %}
+                      <table class="contact mx-auto">
+                          <tbody>
+                          <tr>
+                              <td>MAIL</td>
+                              <td><a href="mailto:info@sacherproject.com">info@sacherproject.com</a></td>
+                          </tr>
+                          <tr>
+                              <td>SITO</td>
+                              <td><a href="http://www.sacherproject.com">www.sacherproject.com</a></td>
+                          </tr>
+                          </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-sm-7" style="background-color:#f0f0f0;color:#95613a; font-size: 1.2em; margin-top: 2em">
+                    <strong>I miei progetti:</strong>
+                    <ul>
+                        {% for bc_id, val in content.items %}
+                            {% if val.users %}
+                                <li {% if not val.display %} style="display: none;"{% endif %}>
+                                    Progetto: <span>{{ val.bc_nome }}</span><br>
+                                    {# Posso gestire il progetto corrente#}
+                                    <ul id="bc-{{ bc_id }}">
+                                        {% for u_id, u_name, r_id, r_name in val.users %}
+                                            {% if u_id == user.id %}
+                                                <li id="{{ u_id }}"><strong>{{ u_name }}</strong><label id="ruolo_{{ r_id }}">, ruolo: {{ r_name }}</label></li>
+                                            {% else %}
+                                                <li id="{{ u_id }}">{{ u_name }}<label id="ruolo_{{ r_id }}">, ruolo: {{ r_name }}</label></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+                        {% empty %}
+                            Nessun progetto
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% if manage is True %}
+            <!-- Aggiungi utente dialog -->
+            <div id="add-user-dialog" title="Gestisci progetti" style="display:none;">
+                <form id='add-user-dialog-form' method="POST">{% csrf_token %}
+                    <fieldset>
+                        <table>
+                            <tr>
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <input class="form-control" placeholder="Cerca bene culturale" name="srch-term-bc" id="srch-term-bc" type="search" onkeyup="search_bc()">
+                                        <div class="input-group-prepend"><span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span></div>
+                                    </div>
+                                </td>
+                                <td>&nbsp;&nbsp;&nbsp;</td>
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <input class="form-control" placeholder="Cerca utente" name="srch-term-users" id="srch-term-users" type="search" onkeyup="search_user()">
+                                        <div class="input-group-prepend"><span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span></div>
+                                    </div>
+                                </td>
+                            <tr valign="top">
+                                <td>
+                                    <div id="bc-radiolist" class="well well-sm pre-scrollable">
+                                        {% for bc_id, val in content.items %}
+                                            {% if val.can_manage is True %}
+                                                <div>
+                                                    <label><input id="bc-radio-{{ bc_id }}" type="radio" value="{{ val.bc_nome }}" name="bc">{{ val.bc_nome }}</label>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>&nbsp;&nbsp;&nbsp;</td>
+                                <td>
+                                    <div id="user-checklist" class="well well-sm pre-scrollable">
+                                        {% for u in users %}
+                                            <div>
+                                                <label><input type="checkbox" name="user-checkbox" id="{{ u.id }}" value="{{ u.username }}"> {{ u.username }}</label>
+                                                <select class="groups-select" name="roles" autocomplete="off" style="display: none;">
+                                                    {% for g in groups %}
+                                                        <option value="{{ g.id }}" name="{{ g.id }}">{{ g }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button id="save-users">SALVA</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </form>
+            </div>
+
+            <div id="create_user_dialog" style="display:none;">
+                <form id="create_user_form" enctype="multipart/form-data" method="post">{% csrf_token %}
+                    <div class="container">
+                        <div class="row form-group">
+                            <label for="username" class="col-6 col-form-label">Email</label>
+                            <input class="form-control col-6" type="text" id="username">
+                        </div>
+                        <div class="row form-group">
+                            <label for="nome" class="col-6 col-form-label">Nome</label>
+                            <input class="form-control col-6" type="text" id="nome">
+                        </div>
+                        <div class="row form-group">
+                            <label for="cognome" class="col-6 col-form-label">Cognome</label>
+                            <input class="form-control col-6" type="text" id="cognome">
+                        </div>
+
+                        <button type="submit">CREA</button>
+                        <button type="button" onClick="$('#create_user_dialog').dialog('close');">ESCI</button>
+                    </div>
+                </form>
+            </div>
+
+            <script>
+                var perms = {};
+                load_perms();
+                var add_user_dialog = $('#add-user-dialog');
+
+                function load_perms() {
+                    let temp_users;
+                    {% for bc_id, val in content.items %}
+                        {% if val.users %}
+                            temp_users = [
+                                {% for u_id, u_name, r_id, r_name in val.users %}
+                                    [{{ u_id }}, "{{ u_name|escapejs }}", {{ r_id }}, "{{ r_name }}"],
+                                {% endfor %}
+                            ];
+
+                            perms[{{ bc_id }}] = {
+                                {#"bc_nome": "{{ val.bc_nome|escapejs }}",#}
+                                "users": temp_users,
+                            };
+                        {% endif %}
+                    {% endfor %}
+                }
+
+                function search_bc() {
+                    var input, filter, div, li, bc, i;
+                    input = document.getElementById("srch-term-bc");
+                    filter = input.value.toUpperCase();
+                    div = document.getElementById("bc-radiolist");
+                    li = div.getElementsByTagName("input");
+                    for (i = 0; i < li.length; i++) {
+                        bc = li[i];
+                        if (bc.value.toUpperCase().indexOf(filter) > -1) {
+                            li[i].parentElement.style.display = "";
+                        } else {
+                            li[i].parentElement.style.display = "none";
+                        }
+                    }
+                }
+
+                function search_user() {
+                    var input, filter, div, li, usr, i;
+                    input = document.getElementById("srch-term-users");
+                    filter = input.value.toUpperCase();
+                    div = document.getElementById("user-checklist");
+                    li = div.getElementsByTagName("input");
+                    for (i = 0; i < li.length; i++) {
+                        usr = li[i];
+                        if (usr.value.toUpperCase().indexOf(filter) > -1) {
+                            li[i].parentElement.parentElement.style.display = "";
+                        } else {
+                            li[i].parentElement.parentElement.style.display = "none";
+                        }
+                    }
+                }
+
+                // Ajax call che assegna i nuovi utenti ai progetti
+                $('#add-user-dialog-form').each(function () {
+                    $(this).data('serialized', $(this).serialize())
+                }).on('change input', function () {
+                    $(this).find('input:submit, button:submit')
+                        .prop('disabled', $(this).serialize() == $(this).data('serialized'));
+                }).find('input:submit, button:submit').prop('disabled', true);
+
+
+                $("#save-users").click(function (e) {
+                    e.preventDefault();
+
+                    var data = {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'bc_id': $('#bc-radiolist input:checked').prop('id').replace('bc-radio-', ''),
+                    };
+
+                    var dict = {};
+                    {# Usrs setted as (user_id, role_id) #}
+                    $('input[name=user-checkbox]:checked').each(function () {
+                        dict[this.id] = parseInt($(this).parent().siblings("select").val());
+                    });
+
+                    data["usrs"] = {};
+                    data["usrs"] = JSON.stringify(dict);
+                    $.ajax({
+                        url: "{% url 'sacher:set_perm' %}",
+                        method: 'POST',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            console.log(data);
+                            if (data.status == 200) { // if true (1)
+                                window.stop();
+                                window.location.reload(true);
+                            }
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            alert("An error occurred while sending a request.");
+                        }
+                    });
+                });
+
+                $("#crea-utente").click(function () {
+                    var create_user_dialog = $('#create_user_dialog');
+                    create_user_dialog.dialog({
+                        autoOpen: false,
+                        height: 'auto',
+                        width: 600,
+                        modal: true,
+                        title: "Crea Utente",
+                        show: {
+                            effect: "drop",
+                            direction: 'up',
+                        },
+                        open: function (event, ui) {
+                            $('.ui-widget-overlay').bind('click', function () {
+                                create_user_dialog.dialog('close');
+                            });
+                        },
+                        close: function (event, ui) {
+                        },
+                    });
+                    create_user_dialog.dialog('open');
+                });
+
+                $('#create_user_dialog').submit(function (e) {
+                    e.preventDefault();
+
+                    let data = new FormData();
+                    data.append('username', $('#username').val());
+                    data.append('nome', $('#nome').val());
+                    data.append('cognome', $('#cognome').val());
+                    data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    $.ajax({
+                        url: "{% url 'sacher:create_user' %}",
+                        type: "POST",
+                        data: data,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            console.log(data);
+                            if (data.status == 200) { // if true (1)
+                                window.stop();
+                                window.location.reload(true);
+                            } else if (data.status == 400) {
+                                alert(data.content);
+                            } else if (data.status == 500) {
+                                alert(data.content);
+                            }
+                        }
+                    });
+                });
+
+                $(document).ready(function () {
+
+                    add_user_dialog.dialog({
+                        autoOpen: false,
+                        height: 'auto',
+                        width: 'auto',
+                        modal: true,
+                        show: {
+                            effect: "drop",
+                            direction: 'up',
+                        },
+                        open: function (event, ui) {
+                            $('#user-checklist :input').attr('disabled', true);
+                            $('.ui-widget-overlay').bind('click', function () {
+                                add_user_dialog.dialog('close');
+                            });
+                        },
+                        close: function () {
+                            // alla chiusura nascondo tutti i select
+                            $("select.groups-select").hide();
+                            // Alla chiusura ripristino la visibilità di utenti e BC filtrati
+                            $("#user-checklist > div").show();
+                            $("#bc-radiolist > div > label").show();
+                            // Disabilito il tasto salva
+                            $("#save-users").prop('disabled', true)
+                        }
+                    });
+
+                    $('#aggiungi-utente').click(function () {
+                        $('#add-user-dialog-form')[0].reset();
+                        add_user_dialog.dialog('open');
+                    });
+
+                    // Per ogni BC selezionato, mostro i relativi utenti con i permessi attuali
+                    $('input[type=radio]').click(function (item) {
+                        var bc_id = item.target.id.replace('bc-radio-', '');
+
+                        // Riattivo la checklist degli utenti
+                        $('#user-checklist :input').attr('disabled', false);
+
+                        $('input[type=checkbox]').each(function () {
+                            // Cerco l'utente della check corrente e setto la checkbox se gia presente
+                            var usr = $(this)[0];
+                            var usr_id = usr.id;
+
+                            $(usr).prop('checked', false);
+                            $(usr).parent().siblings("select").hide();
+                            var bc_list = $('#bc-' + bc_id)[0];
+                            var temp = $(bc_list).children('#' + usr_id)[0];
+                            var role = $(temp).children("label").prop("id");
+
+                            if (typeof temp !== 'undefined') {
+                                role = role.replace('ruolo_', '');
+                                $(usr).parent().siblings("select").show();
+                                $(usr).parent().siblings("select").val(role);
+                                $(usr).prop('checked', true);
+                            }
+                        });
+                    });
+
+                    $('input[type=checkbox]').click(function () {
+                        var usr = $(this)[0];
+                        var select = $(usr).parent().siblings("select")[0];
+                        if ($(select).is(':visible')) {
+                            $(select).hide();
+                        } else {
+                            $(select).show();
+                        }
+                    });
+                });
+            </script>
+        {% endif %}
+    {% endspaceless %}
+{% endblock %}

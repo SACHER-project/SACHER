@@ -1,0 +1,117 @@
+label, input {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group{
+  color: #95613a;
+}
+
+input.text {
+    margin-bottom: 12px;
+    width: 95%;
+    padding: .4em;
+}
+
+fieldset {
+    padding: 0;
+    border: 0;
+    margin-top: 25px;
+}
+
+div#users-contain table {
+    margin: 1em 0;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+div#users-contain table td, div#users-contain table th {
+    border: 1px solid #eee;
+    padding: .6em 10px;
+    text-align: left;
+}
+
+.ui-dialog .ui-state-error {
+    padding: .3em;
+}
+
+#custom-handle {
+    width: 3em;
+    height: 1.6em;
+    top: 50%;
+    margin-top: -.8em;
+    text-align: center;
+    line-height: 1.6em;
+}
+
+select[name="qualificazione"], input#elemento-input, input#year-input, select#edit-parent-select,input#edit-name-input,textarea#edit-desc-input, input[role="spinbutton"], select#add-parent-select, input#add-name-input, input#add-desc-input {
+    width: 70%;
+    background-color: #d6feff;
+    color: #95613a;
+    border: 1px solid #d6feff;
+    margin: .5em;
+}
+
+input#elemento-input, input#year-input{margin: 0}
+
+label.custom-file-label{
+  background: #e7e7e7;
+  border: 1px solid #cccccc;
+  border-radius: 40px;
+  color: #95613a;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+div.custom-file{
+  margin-bottom: .5rem;
+}
+
+.custom-file-label::after{
+  display: none;
+}
+
+span#ui-id1.ui-dialog-title, #operation-preview-dialog-form label{
+      font-family: "titillium";
+      font-size: 18px;
+      color: #95613a;
+}
+
+#spot_name,#spot_descrizione, #operation-preview-dialog-form select{
+  width: 70%;
+  background-color: #d6feff;
+  color: #95613a;
+  border: 1px solid #d6feff;
+  margin: .5em;
+}
+
+div.ui-dialog-buttonset>button.ui-button.ui-corner-all.ui-widget{
+      color: #95613a;
+      border-radius: 40px;
+      font-size: 16px;
+      margin: 0 auto;
+      border: 2px;
+      margin-left: 4px;
+      padding: 12px 32px;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      text-shadow: none;
+      transition: all .5s ease 0s;
+      background: #fdfc5f;
+      border: 1px solid #fdfc5f;
+    }
+
+div.ui-dialog-buttonset>button.ui-button.ui-corner-all.ui-widget:nth-child(3) {
+        background: #dcc2a1;
+        border: 1px solid #dcc2a1;
+    }
+
+
+#custom-handle, #custom-handle:focus{
+  background: #fdfc5f;
+  color: #95613a;
+}
+
+#spot_scala{
+  background: #e7e7e7;
+}

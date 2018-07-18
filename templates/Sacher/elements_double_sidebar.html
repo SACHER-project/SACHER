@@ -1,0 +1,547 @@
+{% load static %}
+{% load expr %}
+
+<!-- Aside Bar  -->
+<div id="wrapper">
+    <div class="overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="nav sidebar-nav" id="sidebar-wrapper" role="search">
+        <div class="search-box">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <input type="text" id="srch-op" class="form-control" placeholder="Ricerca libera" onkeyup="search_operazione()">
+                    <span class="input-group-btn">
+                        <button class="btn" type="button"><i class="fa fa-search"></i></button>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <table id="op-table">
+            {% for op in operazioni_list|dictsort:"titolo" %}
+                <tr>
+                    <td>
+                        {% if op.ref3d_set.all.count > 0 %}
+                            <img id="toggle_op_{{ op.id }}" class="toggle_op visible" src="{% static 'sacher/icons/visualizza_livello_on.png' %}" width="20px">
+                        {% else %}
+                            <img width="20px">
+                        {% endif %}
+                    </td>
+                    <td>
+                        <label id="{{ op.id }}" class="op-item">{{ op.titolo }}</label>
+                    </td>
+                    <td>
+                        <label class="op-date">{{ op.data_inizio|date:"d-m-Y" }}</label>
+                    </td>
+                </tr>
+            {% empty %}
+                <p>Nessuna operazione su questo bene culturale.</p>
+            {% endfor %}
+        </table>
+    </aside>
+    <!-- /#sidebar-wrapper -->
+    <div id="page-content-wrapper">
+        <button type="button" class="hamburger is-closed animated fadeInLeft" data-toggle="offcanvas">
+            <div id="hamburger1"></div>
+        </button>
+    </div>
+</div>
+
+<div id="wrapper2">
+    <div class="overlay2"></div>
+
+    <!-- Sidebar -->
+    <aside class="nav sidebar-nav aside2" id="sidebar-wrapper" role="search" style="overflow: scroll;">
+        {% if sacher_perms >= 4 or user.groups.all.0.name == 'ente' %}
+            <a href="#" onclick="add_elemento()" id="add_elemento" class="btn-sacher">AGGIUNGI SOTTOELEMENTO</a>
+            <a href="#" onclick="add_model()" id="add_model" class="btn-sacher">AGGIUNGI MODELLO 3D</a>
+        {% endif %}
+        {{ elementi_tree }}
+    </aside>
+    <!-- /#sidebar-wrapper -->
+    <div id="page-content-wrapper">
+        <!-- TODO aggiungi il link dell'immagine -->
+        <button type="button" class="hamburger2 is-closed animated fadeInLeft" data-toggle="offcanvas2">
+            <div id="hamburger2"></div>
+        </button>
+    </div>
+</div>
+<!-- /#wrapper -->
+
+<div id="add_elem_dialog" style="display:none;">
+    <form id="add_elem_form" enctype="multipart/form-data" method="post">{% csrf_token %}
+        <div class="form-group row">
+            <label for="add-parent-select" class="col-4 col-form-label">Elemento Padre</label>
+            <div class="col-8">
+                <select class="form-control" id="add-parent-select" name="parent-select"></select>
+                {#                <input class="form-control" id="add-parent-select" name="parent-select" value="{{ elemento.nome }}" disabled>#}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="add-name-input" class="col-4 col-form-label">Sigla Elemento</label>
+            <div class="col-8">
+                <input class="form-control" type="text" id="add-name-input" name="name-input">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="add-desc-input" class="col-4 col-form-label">Nome Elemento</label>
+            <div class="col-8">
+                <input class="form-control" type="text" id="add-desc-input" name="desc-input">
+            </div>
+        </div>
+
+        <button type="submit">CREA</button>
+        <button type="button" onClick="$('#add_elem_dialog').dialog('close');">ESCI</button>
+    </form>
+</div>
+
+<div id="edit_elem_dialog" style="display:none;">
+    <form id="edit_elem_form" enctype="multipart/form-data" method="post">{% csrf_token %}
+        <div class="form-group row">
+            <label for="edit-parent-select" class="col-4 col-form-label">Elemento Padre</label>
+            <div class="col-8">
+                <select class="form-control" id="edit-parent-select" name="parent-select" disabled></select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="edit-name-input" class="col-4 col-form-label">Sigla Elemento</label>
+            <div class="col-8">
+                <input class="form-control" type="text" id="edit-name-input" name="name-input">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="edit-desc-input" class="col-4 col-form-label">Nome Elemento</label>
+            <div class="col-8">
+                <textarea class="form-control" id="edit-desc-input" name="desc-input" placeholder="Nome Elemento" required></textarea>
+            </div>
+        </div>
+
+        <button type="submit">UPDATE</button>
+        <button type="button" onClick="$('#edit_elem_dialog').dialog('close');">ESCI</button>
+    </form>
+</div>
+
+<div id="add_model_dialog" style="display:none;">
+    <form id="add_model_form" enctype="multipart/form-data" method="post">{% csrf_token %}
+        <div class="container">
+            <div class="row form-group">
+                <label for="elemento-input" class="col-6 col-form-label">Nome Elemento</label>
+                {#                            <div class="col-8">#}
+                <input class="form-control col-6" type="text" id="elemento-input" value="{{ elemento.nome }}" disabled>
+                {#                            </div>#}
+            </div>
+            <div class="row form-group">
+                <label for="year-input" class="col-6 col-form-label">Anno</label>
+                {#                            <div class="col-10">#}
+                <input class="form-control col-6" type="number" id="year-input" value="2018" min="0" max="2018">
+                {#                            </div>#}
+            </div>
+            <div class="row justify-content-between">
+                <div class="col-5 custom-file">
+                    <input type="file" class="custom-file-input" id="nxs_model_file" accept=".nxs">
+                    <label class="custom-file-label" for="nxs_model_file">Carica .nxs</label>
+                </div>
+                <div class="col-5 custom-file">
+                    <input type="file" class="custom-file-input" id="ply_model_file" accept=".ply">
+                    <label class="custom-file-label" for="ply_model_file">Carica .ply</label>
+                </div>
+            </div>
+            <div class="row justify-content-between">
+                <div class="col-5 offset-7 custom-file">
+                    <input type="file" class="custom-file-input" id="texture_file" accept="image/*">
+                    <label class="custom-file-label" for="texture_file">Carica texture</label>
+                </div>
+            </div>
+            <div class="row progress">
+                <div id='progress-bar' class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 0%;"></div>
+            </div>
+            <br>
+            <button type="submit">CARICA</button>
+            <button type="button" onClick="$('#add_model_dialog').dialog('close');">ESCI</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let trigger = $('.hamburger'),
+        overlay = $('.overlay'),
+        isClosed = false;
+
+    let trigger2 = $('.hamburger2'),
+        overlay2 = $('.overlay2'),
+        isClosed2 = false;
+
+
+    var add_elem_dialog = $('#add_elem_dialog');
+    var add_elem_form = $('#add_elem_form');
+    var edit_elem_dialog = $('#edit_elem_dialog');
+    var edit_elem_form = $('#edit_elem_form');
+    var element = null;
+
+    var add_model_dialog = $('#add_model_dialog');
+    var ply_model_input = $('#ply_model_file');
+    var texture_input = $('#texture_file');
+    var nxs_model_input = $('#nxs_model_file');
+    var progress = $('#progress-bar');
+
+
+    trigger.click(function () {
+        hamburger_cross();
+    });
+
+    trigger2.click(function () {
+        hamburger2_cross();
+    });
+
+    function hamburger_cross() {
+        if (isClosed == true) {
+            overlay.hide();
+            trigger.removeClass('is-open');
+            trigger.addClass('is-closed');
+            isClosed = false;
+        } else {
+            overlay.show();
+            trigger.removeClass('is-closed');
+            trigger.addClass('is-open');
+            if (isClosed2 == true) {
+                overlay2.hide();
+                trigger2.removeClass('is-open');
+                trigger2.addClass('is-closed');
+                isClosed2 = false;
+            }
+            isClosed = true;
+        }
+    }
+
+    function hamburger2_cross() {
+
+        if (isClosed2 == true) { // chiudo il secondo hamburger menu
+            overlay2.hide();
+            trigger2.removeClass('is-open');
+            trigger2.addClass('is-closed');
+            isClosed2 = false;
+        } else { // apro il secondo hamburger menu
+            overlay2.show();
+            trigger2.removeClass('is-closed');
+            trigger2.addClass('is-open');
+            if (isClosed == true) {
+                overlay.hide();
+                trigger.removeClass('is-open');
+                trigger.addClass('is-closed');
+                isClosed = false;
+            }
+            isClosed2 = true;
+
+        }
+    }
+
+    $('[data-toggle="offcanvas"]').click(function () {
+        $('#wrapper').toggleClass('toggled');
+    });
+
+    $('[data-toggle="offcanvas2"]').click(function () {
+        $('#wrapper2').toggleClass('toggled');
+    });
+
+    $('.op-item').click(function () {
+        $('#wrapper').toggleClass('toggled');
+        hamburger_cross();
+    });
+
+    $('.toggle_op').click(function () {
+        var clicked = $(this)[0];
+        const op_id = clicked.id.replace('toggle_op_', '');
+        let op = null;
+        for (i in ops) {
+            if (ops[i].id == op_id) {
+                op = ops[i];
+                break;
+            }
+        }
+        toggleHotspots(op);
+
+        // Cambio icona
+        let src = $(clicked);
+        if ($(clicked).hasClass("visible")) {
+            $(clicked).prop("src", "{% static 'sacher/icons/visualizza_livello_off.png' %}");
+            $(clicked).toggleClass("visible");
+        } else {
+            $(clicked).prop("src", "{% static 'sacher/icons/visualizza_livello_on.png' %}");
+            $(clicked).toggleClass("visible");
+        }
+
+    });
+
+    function search_operazione() {
+        let input, filter, i;
+        input = document.getElementById("srch-op");
+        filter = input.value.toUpperCase();
+        let op_table = document.getElementById("op-table");
+        let tr = $(op_table).find('tr'); // tr è figlio di tbody, non table
+        let label;
+        for (i = 1; i < tr.length; i++) {
+            label = $(tr[i]).find('label')[0];
+            if ($(label).text().toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "-webkit-box";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+
+    $('.delete-element').click(function () {
+        let pk = this.id.replace('delete-element-', '');
+        let nome = $(this).siblings('strong').text() + ': ' + $(this).siblings('a').text();
+        if (confirm('Vuoi confermale l\'eliminazione dell\'elemento "' + nome + '"?')) {
+            data = {
+                'elem_id': pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            };
+
+            $.ajax({
+                url: "{% url 'sacher:elemento_delete' %}",
+                dataType: 'json',
+                method: 'POST',
+                data: data,
+                success: function (data) {
+                    // Redirect
+                    window.location.href = data.content;
+                }
+            });
+        }
+    });
+
+    $('.edit-element').click(function () {
+        function fill_edit_element_form() {
+            $('#edit-name-input').val(element['nome']);
+            $('#edit-desc-input').val(element['descrizione']);
+            var parent_select = $('#edit-parent-select');
+            parent_select.find('option').remove().end();
+            parent_select.append('<option value="">---------</option>');
+            {% for e in elementi %}
+                parent_select.append('<option value={{ e.id }}>{{ e.nome }}</option>');
+            {% endfor %}
+            $.each($(parent_select).children('option'), function () {
+                if ($(this).val() == element.padre) {
+                    $(this).prop('selected', 'selected');
+                }
+            });
+        }
+
+        function edit_element() {
+            $(edit_elem_dialog).dialog({
+                autoOpen: false,
+                height: 'auto',
+                width: 'auto',
+                modal: true,
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $('.ui-widget-overlay').bind('click', function () {
+                        edit_elem_dialog.dialog('close');
+                    });
+                },
+                close: function (event, ui) {
+                },
+            });
+            fill_edit_element_form();
+            edit_elem_dialog.dialog('open');
+        }
+
+        let pk = this.id.replace('edit-element-', '');
+        data = {
+            'elem_id': pk,
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+        };
+
+        $.ajax({
+            url: "{% url 'sacher:get_element' %}",
+            dataType: 'json',
+            method: 'POST',
+            data: data,
+            success: function (data) {
+                element = JSON.parse(data.content);
+                edit_element();
+            }
+        });
+
+    });
+
+    $(edit_elem_form).submit(function (e) {
+        e.preventDefault();
+
+        var data = {
+            'parent': $('#edit-parent-select').val(),
+            'name': $('#edit-name-input').val(),
+            'desc': $('#edit-desc-input').val(),
+            'elem_id': element.id,
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+        };
+        $.ajax({
+            url: "{% url 'sacher:edit_element' %}",
+            dataType: 'json',
+            method: 'POST',
+            data: data,
+            success: function (data) {
+                if (data.status === 200) {
+                    {#edit_elem_form.find('button[type=submit]').prop('disabled', true);#}
+                    {#edit_elem_dialog.dialog('close');#}
+                    window.stop();
+                    window.location.reload(true);
+                }
+            }
+        });
+    });
+
+    {% if sacher_perms >= 4 or user.groups.all.0.name == 'ente' %}
+
+        function add_elemento() {
+            add_elem_dialog.dialog({
+                autoOpen: false,
+                height: 'auto',
+                width: 600,
+                modal: true,
+                title: "Aggiungi Elemento al Grafo Semantico",
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $('.ui-widget-overlay').bind('click', function () {
+                        add_elem_dialog.dialog('close');
+                    });
+                },
+                close: function (event, ui) {
+                },
+            });
+
+            // Fill the form
+            var parent_select = $('#add-parent-select');
+            parent_select.find('option').remove().end();
+            {#parent_select.append('<option value=""></option>');#}
+            {% for e in elementi %}
+                parent_select.append('<option value={{ e.id }}{% if elemento and e.id == elemento.id %} selected="selected"{% endif %}>{{ e.nome }} - {{ e.descrizione }}</option>');
+            {% endfor %}
+
+
+            add_elem_dialog.dialog('open');
+        }
+
+        $(add_elem_form).submit(function (e) {
+            e.preventDefault();
+
+            var data = {
+                'padre': $('#add-parent-select').val(),
+                'nome': $('#add-name-input').val(),
+                'descrizione': $('#add-desc-input').val(),
+                {% if elemento %}
+                    'bc_id': '{{ elemento.bene_culturale_id }}',
+                {% elif bc %}
+                    'bc_id': '{{ bc.id }}',
+                {% endif %}
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            };
+            $.ajax({
+                url: "{% url 'sacher:add_element' %}",
+                dataType: 'json',
+                method: 'POST',
+                data: data,
+                success: function (data) {
+                    if (data.status === 200) {
+                        add_elem_dialog.dialog('close');
+                        window.stop();
+                        window.location.reload(true);
+                    }
+                }
+            });
+        });
+
+        function add_model() {
+            add_model_dialog.dialog({
+                autoOpen: false,
+                height: 'auto',
+                width: 600,
+                modal: true,
+                title: "Aggiungi Modello 3d",
+                show: {
+                    effect: "drop",
+                    direction: 'up',
+                },
+                open: function (event, ui) {
+                    $(add_model_dialog).find('.progress').hide();
+                    $('.ui-widget-overlay').bind('click', function () {
+                        add_model_dialog.dialog('close');
+                    });
+                },
+                close: function (event, ui) {
+                },
+            });
+            add_model_dialog.dialog('open');
+        }
+
+        $('#add_model_form').submit(function (e) {
+            e.preventDefault();
+
+            var data = new FormData();
+            data.append('ply_model_file', ply_model_input[0].files[0]);
+            data.append('nxs_model_file', nxs_model_input[0].files[0]);
+            data.append('texture_file', texture_input[0].files[0]);
+            data.append('anno', $('#year-input').val());
+            data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            data.append('elem_id', '{{ elemento.id }}');
+
+            $(progress).parent().show();
+
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+
+                    xhr.upload.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            $(progress).css("width", percentComplete + '%').attr("aria-valuenow", percentComplete);
+
+                            {#if (percentComplete === 100) {#}
+                            {#    $(progress).text(percentComplete + '%');#}
+                            {# }#}
+                        }
+                    }, false);
+                    return xhr;
+                },
+                url: "{% url 'sacher:add_model' %}",
+                type: "POST",
+                data: data,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (result) {
+                    $(progress).parent().hide("drop", {direction: "up"}, "slow");
+                    $(progress).css("width", '0%').attr("aria-valuenow", 0);
+                    add_model_dialog.dialog('close');
+                    if (result.status == 200) { // if true (1)
+                        window.stop();
+                        window.location.reload(true);
+                    }
+                }
+            });
+        });
+        ply_model_input.change(function () {
+            $('label[for=' + $(ply_model_input).prop('id') + ']').text($(ply_model_input).val().split('\\').pop());
+        });
+        texture_input.change(function () {
+            $('label[for=' + $(texture_input).prop('id') + ']').text($(texture_input).val().split('\\').pop());
+        });
+        nxs_model_input.change(function () {
+            $('label[for=' + $(nxs_model_input).prop('id') + ']').text($(nxs_model_input).val().split('\\').pop());
+        });
+
+    {% endif %}
+</script>

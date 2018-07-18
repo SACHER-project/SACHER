@@ -1,0 +1,14 @@
+{% extends 'Sacher/base.html' %}
+{% block title %}Collega un'altra operazione all'operazione "{{ operazione.titolo }}"{% endblock %}
+{% block h1title %}Collega un'altra operazione all'operazione "{{ operazione.titolo }}"{% endblock %}
+{% block content %}
+
+    <form action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+        <table>
+	    {{ form.as_table }}
+        </table>
+	<input type="submit" value="Aggiungi">
+    </form>
+
+{% endblock %}
